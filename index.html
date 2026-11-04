@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Match Is Your Song?</title>
+<meta name="description" content="Drop in a song. We find the NFL game or IPL match whose tension rises and falls the same way, then play it back with a live scoreboard.">
+<style>
+:root {
+  --bg: #f4f1ea; --bg2: #ffffff; --ink: #121a2b; --ink2: #4a5468; --line: #d9d3c6;
+  --flood: #c98a00; --song: #d81b60; --game: #0077b6; --home: #0077b6; --away: #e4572e;
+  --six: #c98a00; --wkt: #d62828; --chip: #ebe6da; --shadow: 0 6px 24px rgba(18,26,43,.08);
+  --hero1: #fff1c2; --hero2: #f4f1ea; --beam: rgba(255, 200, 60, .22);
+  /* the scoreboard is always a night-time jumbotron */
+  --jt-bg: #0a0f1d; --jt-ink: #f3f5fa; --jt-dim: #8d99b3; --jt-led: #ffd23f; --jt-home: #3ad1ff; --jt-away: #ff8a4c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #070b16; --bg2: #101829; --ink: #f3f5fa; --ink2: #9aa6bf; --line: #24304a;
+    --flood: #ffd23f; --song: #ff4f8b; --game: #3ad1ff; --home: #3ad1ff; --away: #ff8a4c;
+    --six: #ffd23f; --wkt: #ff5252; --chip: #18223a; --shadow: 0 8px 30px rgba(0,0,0,.45);
+    --hero1: #1b2748; --hero2: #070b16; --beam: rgba(255, 230, 150, .10);
+    --jt-bg: #04070f;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--game); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+/* ---------- hero: floodlights ---------- */
+header.hero {
+  position: relative; overflow: hidden;
+  background: radial-gradient(ellipse 70% 120% at 15% -20%, var(--hero1), transparent 60%),
+              radial-gradient(ellipse 60% 110% at 90% -30%, var(--hero1), transparent 60%), var(--hero2);
+  border-bottom: 1px solid var(--line); padding: 38px 0 28px;
+}
+header.hero::before, header.hero::after {
+  content: ""; position: absolute; top: -40%; width: 46%; height: 180%; pointer-events: none;
+  background: linear-gradient(180deg, var(--beam), transparent 70%); filter: blur(6px);
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); transform-origin: 50% 0;
+  animation: sweep 9s ease-in-out infinite alternate;
+}
+header.hero::before { left: -6%; transform: rotate(-24deg); }
+header.hero::after { right: -6%; transform: rotate(24deg); animation-delay: -4.5s; animation-name: sweep2; }
+@keyframes sweep { from { transform: rotate(-30deg); } to { transform: rotate(-12deg); } }
+@keyframes sweep2 { from { transform: rotate(30deg); } to { transform: rotate(12deg); } }
+header.hero .wrap { position: relative; z-index: 1; }
+.kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--flood); font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; }
+.eq i { width: 3px; background: currentColor; border-radius: 1px; animation: eq 1s ease-in-out infinite; }
+.eq i:nth-child(2) { animation-delay: -.3s; } .eq i:nth-child(3) { animation-delay: -.6s; } .eq i:nth-child(4) { animation-delay: -.15s; }
+@keyframes eq { 0%, 100% { height: 3px; } 50% { height: 12px; } }
+h1 { font-size: clamp(30px, 6vw, 54px); line-height: 1.02; margin: 6px 0 10px; font-weight: 900; letter-spacing: -.02em; }
+h1 em { font-style: normal; background: linear-gradient(90deg, var(--song), var(--flood), var(--song)); background-size: 200% 100%;
+        -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 6s linear infinite; }
+@keyframes shine { to { background-position: -200% 0; } }
+.lede { color: var(--ink2); max-width: 660px; margin: 0 0 20px; font-size: 17px; }
+.drop { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; border: 2px dashed var(--line); border-radius: 18px; padding: 16px; transition: border-color .15s, background .15s; background: color-mix(in srgb, var(--bg2) 55%, transparent); }
+.drop.over { border-color: var(--song); background: color-mix(in srgb, var(--song) 8%, transparent); }
+.btn { appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 800; border-radius: 999px; }
+.btn.big { background: var(--song); color: #fff; padding: 14px 26px; font-size: 18px; box-shadow: 0 6px 20px color-mix(in srgb, var(--song) 40%, transparent); transition: transform .12s, filter .12s; }
+.btn.big:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.small { font-size: 13px; color: var(--ink2); }
+.status { font-size: 14px; color: var(--ink2); min-height: 1.5em; margin-top: 8px; }
+.scope { display: inline-flex; background: var(--chip); border-radius: 999px; padding: 3px; gap: 2px; }
+.scope button { background: transparent; color: var(--ink2); padding: 6px 14px; font-size: 14px; }
+.scope button[aria-pressed="true"] { background: var(--bg2); color: var(--ink); box-shadow: var(--shadow); }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin: 24px 0 10px; }
+h2 { font-size: 22px; margin: 0; font-weight: 900; letter-spacing: -.01em; }
+.row .small { flex-basis: 100%; margin-top: -6px; }
+
+/* ---------- demo cards ---------- */
+.demos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.demo { position: relative; background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; text-align: left; color: inherit; font: inherit; display: flex; flex-direction: column; gap: 3px; transition: transform .15s, box-shadow .15s, border-color .15s; }
+.demo:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.demo[aria-pressed="true"] { border-color: var(--song); box-shadow: 0 0 0 2px color-mix(in srgb, var(--song) 35%, transparent), var(--shadow); }
+.demo .d-shape { font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--song); padding-right: 22px; }
+.demo .d-piece { font-size: 15px; font-weight: 800; line-height: 1.2; }
+.demo .d-comp { font-size: 12.5px; color: var(--ink2); }
+.demo .d-blurb { font-size: 12.5px; color: var(--ink2); line-height: 1.35; margin-top: 4px; flex: 1; }
+.demo canvas { width: 100%; height: 40px; display: block; margin-top: 6px; }
+.demo .d-match { font-size: 12px; line-height: 1.3; font-weight: 700; min-height: 2.6em; }
+.demo .eq { position: absolute; top: 12px; right: 12px; color: var(--song); visibility: hidden; }
+.demo.playing .eq { visibility: visible; }
+.demo:not(.playing) .d-play::before { content: "▶"; }
+.demo .d-play { position: absolute; top: 9px; right: 11px; font-size: 12px; color: var(--ink2); }
+.demo.playing .d-play { display: none; }
+
+/* ---------- result ---------- */
+.card { background: var(--bg2); border: 1px solid var(--line); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); }
+.res-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.badge { display: inline-block; font-size: 11px; font-weight: 900; letter-spacing: .08em; padding: 3px 8px; border-radius: 6px; color: #fff; vertical-align: middle; }
+.badge.NFL { background: #013369; } .badge.IPL { background: #6a1b9a; }
+@media (prefers-color-scheme: dark) { .badge.NFL { background: #1d5fbf; } .badge.IPL { background: #9c4dcc; } }
+.res-title { font-size: clamp(20px, 3.4vw, 28px); font-weight: 900; line-height: 1.15; margin: 6px 0 2px; }
+.res-sub { color: var(--ink2); font-size: 14px; }
+.pct { text-align: right; }
+.pct b { font-size: 38px; font-weight: 900; color: var(--flood); line-height: 1; display: block; font-variant-numeric: tabular-nums; }
+.pct span { font-size: 12px; color: var(--ink2); }
+
+/* jumbotron scoreboard */
+.jumbo { position: relative; overflow: hidden; margin-top: 14px; border-radius: 14px; color: var(--jt-ink); padding: 12px 14px 10px;
+  background: radial-gradient(circle, rgba(255,255,255,.05) 1px, transparent 1.3px) 0 0 / 5px 5px, linear-gradient(180deg, #121a30, var(--jt-bg));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 -20px 40px rgba(0,0,0,.35); }
+.jt-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+.jt-team { display: flex; flex-direction: column; min-width: 0; }
+.jt-team.r { align-items: flex-end; text-align: right; }
+.jt-team .nm { font-size: 13px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.jt-team .sc { font-size: clamp(28px, 6vw, 44px); font-weight: 900; line-height: 1; color: var(--jt-led); font-variant-numeric: tabular-nums; text-shadow: 0 0 18px color-mix(in srgb, var(--jt-led) 45%, transparent); }
+.jt-team .ex { font-size: 12px; color: var(--jt-dim); min-height: 1.2em; }
+.jt-mid { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.jt-mid .clk { font-size: 16px; font-weight: 900; letter-spacing: .06em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.jt-mid .sub { font-size: 12px; color: var(--jt-dim); max-width: 220px; line-height: 1.3; }
+.live { font-size: 10px; font-weight: 900; letter-spacing: .14em; color: #ff4d4d; opacity: 0; transition: opacity .2s; }
+.jumbo.on .live { opacity: 1; animation: blink 1.2s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.jt-bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; margin-top: 10px; background: #1b2440; }
+.jt-bar i { display: block; height: 100%; transition: width .25s ease-out; }
+.jt-bar-l { display: flex; justify-content: space-between; font-size: 11px; color: var(--jt-dim); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.jt-bar-l b { color: var(--jt-ink); }
+/* big-moment ticker: a quiet line under the scoreboard, never on top of the score; space is reserved so nothing shifts */
+.jt-flash { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(255,255,255,.08); min-height: 2.6em; font-size: 12.5px; line-height: 1.3;
+  color: var(--jt-ink); text-align: center; opacity: 0; transition: opacity .3s; pointer-events: none; }
+.jt-flash b { color: var(--jt-led); font-weight: 900; letter-spacing: .06em; margin-right: 6px; }
+.jt-flash span { color: var(--jt-dim); }
+.jt-flash.on { opacity: 1; }
+
+.panel-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink2); margin: 16px 0 4px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.chart { position: relative; width: 100%; }
+.chart canvas { width: 100%; display: block; cursor: pointer; touch-action: manipulation; }
+#wp { height: 210px; } #ov { height: 170px; }
+.player { display: flex; gap: 8px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+.player .btn { background: var(--chip); color: var(--ink); padding: 8px 14px; font-size: 14px; }
+.player .btn.play { background: var(--song); color: #fff; min-width: 96px; box-shadow: 0 4px 14px color-mix(in srgb, var(--song) 35%, transparent); }
+.player input[type=range] { flex: 1 1 160px; accent-color: var(--song); }
+.time { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink2); min-width: 88px; text-align: right; }
+.moments { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+.moments li button { width: 100%; text-align: left; display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: baseline; background: var(--chip); border: 0; border-radius: 10px; padding: 9px 12px; color: inherit; font: inherit; font-size: 14px; cursor: pointer; transition: background .3s; }
+.moments li button:hover { outline: 2px solid color-mix(in srgb, var(--song) 50%, transparent); }
+.moments li.hit button { background: color-mix(in srgb, var(--flood) 22%, var(--chip)); }
+.moments .ts { font-weight: 900; color: var(--song); font-variant-numeric: tabular-nums; }
+.moments .clk { font-weight: 700; color: var(--ink2); margin-right: 6px; }
+.runners { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+.runner { background: var(--chip); border: 0; border-radius: 12px; padding: 10px; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+.runner:hover { outline: 2px solid color-mix(in srgb, var(--game) 50%, transparent); }
+.runner .rt { font-size: 12.5px; line-height: 1.3; display: block; margin-top: 4px; min-height: 3.9em; }
+.runner .rp { font-size: 12px; color: var(--flood); font-weight: 900; }
+.runner .classic { font-size: 11px; color: var(--ink2); white-space: nowrap; }
+.runner canvas { width: 100%; height: 34px; display: block; margin-top: 4px; }
+.share { display: flex; gap: 8px; align-items: center; margin-top: 16px; background: var(--chip); border-radius: 12px; padding: 10px 12px; flex-wrap: wrap; }
+.share code { flex: 1 1 220px; font: 14px/1.4 inherit; font-family: inherit; }
+.share .btn { background: var(--song); color: #fff; padding: 7px 14px; font-size: 14px; }
+.how { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 10px; }
+.how div { background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; font-size: 14px; color: var(--ink2); }
+.how b { display: block; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+.metrics { margin-top: 12px; font-size: 14px; color: var(--ink2); background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.credits { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; margin-top: 10px; }
+.credits div { background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; color: var(--ink2); line-height: 1.45; }
+.credits b { color: var(--ink); display: block; font-size: 14.5px; }
+.credits .lic { display: inline-block; margin-top: 4px; font-size: 11px; font-weight: 900; letter-spacing: .06em; padding: 2px 7px; border-radius: 6px; background: var(--chip); color: var(--ink); text-decoration: none; }
+footer { color: var(--ink2); font-size: 13px; padding: 30px 0 40px; border-top: 1px solid var(--line); margin-top: 36px; }
+.hidden { display: none !important; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink2); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+@media (max-width: 900px) { .demos { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 760px) {
+  .demos { grid-template-columns: 1fr; }
+  .demo { display: grid; grid-template-columns: 1fr 104px; column-gap: 10px; }
+  .demo > * { grid-column: 1; }
+  .demo canvas { grid-column: 2; grid-row: 1 / span 4; align-self: center; margin: 0; }
+  .demo .d-blurb { display: none; }
+  .demo .d-match { min-height: 0; }
+  .runners { grid-template-columns: repeat(2, 1fr); }
+  .how { grid-template-columns: 1fr 1fr; }
+  #wp { height: 180px; } #ov { height: 150px; }
+  .pct b { font-size: 28px; }
+  .panel-label span + span { display: none; }
+  .jt-mid .sub { max-width: 130px; }
+}
+@media (max-width: 420px) { .how { grid-template-columns: 1fr; } .card { padding: 14px; } .credits { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>NFL · IPL · any song</div>
+    <h1>Which match is <em>your song</em>?</h1>
+    <p class="lede">Every song builds, explodes and drops. So does every game. Pick a song and we search thousands of NFL games and IPL matches for the one whose tension rises and falls the same way. Then hit play and watch the game unfold to your music: the drop lands on the interception.</p>
+    <div class="drop" id="drop">
+      <button class="btn big" id="choose">Choose a song</button>
+      <input type="file" id="file" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" class="hidden">
+      <div>
+        <div class="small">…or drop an audio file here. mp3, m4a, wav or ogg.</div>
+        <div class="small"><b>Your song never leaves your device.</b> It is analysed right here in your browser.</div>
+      </div>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="row">
+    <h2 id="examples-h">No song handy? Five pieces, five shapes</h2>
+    <div class="scope" role="group" aria-label="Search scope">
+      <button class="btn" data-scope="NFL" aria-pressed="false">NFL</button>
+      <button class="btn" data-scope="IPL" aria-pressed="false">IPL</button>
+      <button class="btn" data-scope="both" aria-pressed="true">Both</button>
+    </div>
+    <div class="small">Free classical recordings, each with a different tension curve. Tap one to hear it and see its game. <a href="#music">Credits</a></div>
+  </div>
+  <div class="demos" id="demos"></div>
+
+  <section id="result" class="card hidden" style="margin-top:18px" aria-live="polite">
+    <div class="res-head">
+      <div>
+        <div><span class="badge" id="r-badge"></span> <span class="small" id="r-for"></span></div>
+        <div class="res-title" id="r-title"></div>
+        <div class="res-sub" id="r-sub"></div>
+      </div>
+      <div class="pct" id="r-pct"></div>
+    </div>
+
+    <div class="jumbo" id="jumbo" aria-label="Scoreboard at the playhead">
+      <div class="jt-row">
+        <div class="jt-team" id="jt-l"><span class="nm"></span><span class="sc"></span><span class="ex"></span></div>
+        <div class="jt-mid"><span class="live">● LIVE</span><span class="clk" id="jt-clock"></span><span class="sub" id="jt-sub"></span></div>
+        <div class="jt-team r" id="jt-r"><span class="nm"></span><span class="sc"></span><span class="ex"></span></div>
+      </div>
+      <div class="jt-bar"><i id="jt-bar-l"></i><i id="jt-bar-r"></i></div>
+      <div class="jt-bar-l"><span id="jt-pl"></span><span>win chance</span><span id="jt-pr"></span></div>
+      <div class="jt-flash" id="jt-flash" aria-hidden="true"><b></b><span></span></div>
+    </div>
+
+    <div class="player">
+      <button class="btn play" id="play">▶ Play</button>
+      <button class="btn" id="back" aria-label="Back 10 seconds">−10s</button>
+      <button class="btn" id="fwd" aria-label="Forward 10 seconds">+10s</button>
+      <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Seek">
+      <span class="time" id="time">0:00 / 0:00</span>
+    </div>
+    <audio id="audio" preload="metadata" class="hidden"></audio>
+
+    <div class="panel-label"><span>Win probability</span><span id="wp-hint"></span></div>
+    <div class="chart"><canvas id="wp" aria-label="Win probability chart"></canvas></div>
+    <div class="legend" id="wp-legend"></div>
+
+    <div class="panel-label"><span>Song energy ↔ game tension, aligned</span><span>lines show which moment matches which</span></div>
+    <div class="chart"><canvas id="ov" aria-label="Song energy and game tension aligned"></canvas></div>
+
+    <div class="panel-label"><span>The five biggest swings, on your song's clock</span></div>
+    <ul class="moments" id="moments"></ul>
+
+    <div class="panel-label"><span>Runners-up</span></div>
+    <div class="runners" id="runners"></div>
+
+    <div class="share">
+      <code id="share-text"></code>
+      <button class="btn" id="copy">Copy</button>
+    </div>
+  </section>
+
+  <div class="row" style="margin-top:36px"><h2>How it works</h2></div>
+  <div class="how">
+    <div><b>1 · Your song becomes a line</b>Loudness plus how busy the sound is, every 23 ms, smoothed over ~3 s.</div>
+    <div><b>2 · Every game becomes a line</b>Tension = how much the next play could swing the result, plus how much it just did.</div>
+    <div><b>3 · Shapes get compared</b>Both lines are stretched to 200 points and matched with a time-warp that may bend each by at most 5%. ★ Classic games get a small boost in the ranking.</div>
+    <div><b>4 · Win probability</b>NFL: nflverse's model. IPL: our own model, trained on every men's T20 match on Cricsheet.</div>
+  </div>
+  <div class="metrics" id="metrics">IPL model metrics load with the index.</div>
+
+  <div class="row" style="margin-top:36px" id="music"><h2>The music</h2>
+    <div class="small">All five demo recordings come from <a href="https://www.classicals.de">classicals.de</a>. Thank you to the performers and producers below for making them free to use. Each was re-encoded to 128 kbps MP3 for the web, with no other changes.</div>
+  </div>
+  <div class="credits" id="credits"></div>
+</main>
+
+<footer>
+  <div class="wrap">
+    NFL play-by-play and win probability: <a href="https://github.com/nflverse">nflverse / nflfastR</a>. Cricket ball-by-ball: <a href="https://cricsheet.org">Cricsheet</a>. IPL win probability is our own model, not an official one.
+    Demo music: public-domain and Creative Commons recordings via <a href="https://www.classicals.de">classicals.de</a>, credited <a href="#music">above</a>. Songs you choose are analysed in your browser and never uploaded.
+    No logos, no tracking. A fan toy, not affiliated with the NFL or the IPL. <a href="v1.html">Previous version</a>.
+  </div>
+</footer>
+
+<script src="core.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const S = SongMatch, N = S.N;
+const st = { idx: null, rows: null, Q: null, demos: [], scope: "both", song: null, songRaw: null, res: null, cur: null, game: null,
+             path: null, jOfI: null, iOfJ: null, t0: 0, t1: 30, dur: 30, songName: "", demoKey: null,
+             started: false, lastT: 0, flashTimer: 0, shown: { l: null, r: null } };
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const audio = () => $("audio");
+
+// ---------- worker (built from a blob: URL so the page never freezes) ----------
+let worker, reqId = 0;
+const pending = new Map();
+async function makeWorker() {
+  const core = await (await fetch("core.js")).text();
+  const body = `${core}
+let Q = null, rows = null, scale = 32;
+onmessage = e => {
+  const m = e.data;
+  if (m.type === "index") { Q = new Int8Array(m.Q); rows = m.rows; scale = m.scale; return; }
+  if (m.type === "analyse") {
+    const en = SongMatch.energyCurve(m.x, m.sr);
+    postMessage({ id: m.id, energy: en });
+    return;
+  }
+  if (m.type === "search") {
+    const a = SongMatch.normalise(m.curve);
+    postMessage({ id: m.id, a, res: a ? SongMatch.search(a, Q, rows, scale, m.scope) : null });
+  }
+};`;
+  worker = new Worker(URL.createObjectURL(new Blob([body], { type: "text/javascript" })));
+  worker.onmessage = e => { const p = pending.get(e.data.id); pending.delete(e.data.id); p && p(e.data); };
+}
+const ask = (msg, transfer) => new Promise(r => { const id = ++reqId; pending.set(id, r); worker.postMessage({ ...msg, id }, transfer || []); });
+
+// ---------- helpers ----------
+const fmt = s => { s = Math.max(0, s || 0); return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`; };
+const pctOf = d => st.idx.pct ? Math.round(100 * Math.exp(-d / st.idx.pct.s)) : null;
+const curveOf = i => { const out = new Array(N); for (let k = 0; k < N; k++) out[k] = st.Q[i * N + k] / st.idx.scale; return out; };
+const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function setupCanvas(cv) {
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const w = Math.max(10, Math.round(r.width)), h = Math.max(10, Math.round(r.height));
+  if (cv.width !== w * dpr || cv.height !== h * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  return { g, w, h };
+}
+function spark(cv, ys, color) {
+  const { g, w, h } = setupCanvas(cv);
+  let lo = Infinity, hi = -Infinity; for (const v of ys) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  g.beginPath();
+  ys.forEach((v, k) => { const x = k / (ys.length - 1) * w, y = h - 3 - (v - lo) / (hi - lo || 1) * (h - 6); k ? g.lineTo(x, y) : g.moveTo(x, y); });
+  g.strokeStyle = color; g.lineWidth = 2; g.lineJoin = "round"; g.stroke();
+}
+function songName(file) {
+  return file.replace(/\.[^.]+$/, "").replace(/^\s*(\d{1,3}|[A-D]\d{1,2})\s*[-._)\]]?\s+/, "").replace(/_/g, " ").trim() || "My song";
+}
+function status(t) { $("status").textContent = t; }
+const shortPiece = p => p.includes(":") ? p.split(":").pop().trim().replace(/^[IVX]+\.\s*/, "") : p.replace(/,\s*(Op|WWV)\.?.*$/i, "");
+
+// ---------- alignment: song index i <-> game index j via the DTW path ----------
+function buildMaps(path) {
+  const sj = new Float64Array(N), cj = new Float64Array(N), si = new Float64Array(N), ci = new Float64Array(N);
+  for (const [i, j] of path) { sj[i] += j; cj[i]++; si[j] += i; ci[j]++; }
+  st.jOfI = Array.from(sj, (v, k) => v / cj[k]); st.iOfJ = Array.from(si, (v, k) => v / ci[k]);
+}
+const lerp = (arr, x) => { x = Math.min(N - 1, Math.max(0, x)); const a = Math.floor(x), b = Math.min(N - 1, a + 1); return arr[a] + (arr[b] - arr[a]) * (x - a); };
+const songIdx = t => (t - st.t0) / (st.t1 - st.t0 || 1) * (N - 1);
+const timeOfSongIdx = i => st.t0 + i / (N - 1) * (st.t1 - st.t0);
+const gameFracAt = t => lerp(st.jOfI, songIdx(t)) / (N - 1);
+const timeOfGameFrac = f => timeOfSongIdx(lerp(st.iOfJ, f * (N - 1)));
+
+// ---------- scoreboard at the playhead ----------
+const overs = b => `${Math.floor(b / 6)}.${b % 6}`;
+const wpAtFrac = (gm, f) => { const wp = gm.wp, x = Math.min(1, Math.max(0, f)) * (wp.length - 1), a = Math.floor(x), b = Math.min(wp.length - 1, a + 1); return wp[a] + (wp[b] - wp[a]) * (x - a); };
+function sides(gm) {
+  // left/right as on a broadcast: NFL away @ home; IPL team batting first on the left. p = P(left side wins)
+  return gm.league === "NFL"
+    ? { l: gm.away_name, r: gm.home_name, lc: css("--jt-away"), rc: css("--jt-home"), pl: p => 1 - p }
+    : { l: gm.home, r: gm.away, lc: css("--jt-home"), rc: css("--jt-away"), pl: p => p };
+}
+function scoreAt(gm, f) {
+  const sb = gm.sb || {}, n = gm.wp.length, k = Math.round(Math.min(1, Math.max(0, f)) * (n - 1)), last = k >= n - 1;
+  if (gm.league === "NFL") {
+    if (!sb.h) return null;
+    const q = sb.q[k], c = sb.c[k], ot = (gm.final || "").includes("(OT)");
+    const clock = last || q === 0 ? (ot ? "FINAL · OT" : "FINAL") : `${q >= 5 ? "OT" : "Q" + q} · ${fmt(c)}`;
+    return { l: String(sb.a[k]), r: String(sb.h[k]), le: "", re: "", clock, sub: "" };
+  }
+  if (!sb.r) return null;
+  const inn = sb.i[k], r = sb.r[k], w = sb.w[k], b = sb.b[k];
+  if (!st.inn1 || st.inn1.id !== gm.id) {   // first-innings total, once per game
+    let j = sb.i.lastIndexOf(1); st.inn1 = { id: gm.id, r: sb.r[j], w: sb.w[j], b: sb.b[j] };
+  }
+  const i1 = st.inn1, tot = (r, w) => w >= 10 ? `${r}` : `${r}/${w}`;
+  if (inn === 1) return { l: tot(r, w), r: "—", le: `${overs(b)} ov`, re: "yet to bat", clock: `1ST INNINGS`, sub: k === 0 ? "first ball coming up" : `over ${overs(b)}` };
+  const ch = gm.chase || { target: i1.r + 1, balls: 120 }, need = ch.target - r, left = ch.balls - b;
+  const sub = last ? (gm.final || "") : need <= 0 ? "target reached" : `need ${need} off ${left} ball${left === 1 ? "" : "s"}`;
+  return { l: tot(i1.r, i1.w), r: tot(r, w), le: `${overs(i1.b)} ov`, re: `${overs(b)} ov · target ${ch.target}`, clock: last ? "FINAL" : "2ND INNINGS", sub };
+}
+function renderScoreboard(t) {
+  const gm = st.game; if (!gm) return;
+  const f = gameFracAt(t), sd = sides(gm), s = scoreAt(gm, f), pl = sd.pl(wpAtFrac(gm, f));
+  const L = $("jt-l"), R = $("jt-r");
+  L.querySelector(".nm").textContent = sd.l; R.querySelector(".nm").textContent = sd.r;
+  L.querySelector(".nm").style.color = sd.lc; R.querySelector(".nm").style.color = sd.rc;
+  for (const [el, side, v, ex] of [[L, "l", s && s.l, s && s.le], [R, "r", s && s.r, s && s.re]]) {
+    const sc = el.querySelector(".sc");
+    if (sc.textContent !== (v ?? "")) {
+      sc.textContent = v ?? ""; st.shown[side] = v;
+    }
+    el.querySelector(".ex").textContent = ex || "";
+  }
+  $("jt-clock").textContent = s ? s.clock : "";
+  $("jt-sub").textContent = s ? s.sub : "";
+  $("jt-bar-l").style.cssText = `width:${(pl * 100).toFixed(1)}%;background:${sd.lc}`;
+  $("jt-bar-r").style.cssText = `width:${((1 - pl) * 100).toFixed(1)}%;background:${sd.rc}`;
+  $("jt-pl").innerHTML = `<b>${Math.round(pl * 100)}%</b> ${escapeHtml(sd.l)}`;
+  $("jt-pr").innerHTML = `${escapeHtml(sd.r)} <b>${Math.round((1 - pl) * 100)}%</b>`;
+  $("jumbo").classList.toggle("on", isPlaying());
+}
+function headline(gm, m) {
+  const d = m.desc;
+  if (gm.league === "IPL") return /SIX/.test(d) ? "SIX!" : /: 4 /.test(d) ? "FOUR!" : /WICKET/.test(d) ? "WICKET!" : /wide|no-ball/.test(d) ? "EXTRAS!" : "BIG BALL";
+  if (/TOUCHDOWN/i.test(d)) return "TOUCHDOWN!";
+  if (/field goal is GOOD/i.test(d)) return "FIELD GOAL!";
+  if (/field goal is (No Good|BLOCKED)/i.test(d)) return "NO GOOD!";
+  if (/INTERCEPTED/i.test(d)) return "INTERCEPTED!";
+  if (/FUMBLE/i.test(d)) return "FUMBLE!";
+  if (/SAFETY/i.test(d)) return "SAFETY!";
+  if (/sacked/i.test(d)) return "SACKED!";
+  return "BIG PLAY";
+}
+function flash(k, m) {
+  const el = $("jt-flash");
+  el.querySelector("b").textContent = headline(st.game, m);
+  el.querySelector("span").textContent = `${k + 1} · ${m.clock} — ${m.desc}`;
+  el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
+  clearTimeout(st.flashTimer); st.flashTimer = setTimeout(() => el.classList.remove("on"), 4000);
+  const li = $("moments").children[k]; if (li) li.classList.add("hit");
+}
+
+// ---------- drawing ----------
+const PAD = { l: 8, r: 8, t: 10, b: 18 };
+function drawWP(now) {
+  const cv = $("wp"), { g, w, h } = setupCanvas(cv), gm = st.game;
+  if (!gm) return;
+  const wp = gm.wp, iw = w - PAD.l - PAD.r, ih = h - PAD.t - PAD.b;
+  const X = f => PAD.l + f * iw, Y = p => PAD.t + (1 - p) * ih, mid = Y(0.5);
+  const pts = wp.map((p, k) => [X(k / (wp.length - 1)), Y(p)]);
+  const xNow = now != null ? X(gameFracAt(now)) : null;
+  // once playback has started, the game "unfolds": what has happened is solid, the rest is a ghost
+  const reveal = st.started && xNow != null;
+  const layer = (alpha, clipX) => {
+    g.save(); g.beginPath(); g.rect(clipX[0], 0, clipX[1] - clipX[0], h); g.clip(); g.globalAlpha = alpha;
+    const area = () => { g.beginPath(); g.moveTo(pts[0][0], mid); pts.forEach(p => g.lineTo(p[0], p[1])); g.lineTo(pts[pts.length - 1][0], mid); g.closePath(); };
+    for (const [top, color] of [[true, css("--home")], [false, css("--away")]]) {
+      g.save(); g.beginPath(); top ? g.rect(0, 0, w, mid) : g.rect(0, mid, w, h); g.clip();
+      area(); g.globalAlpha = alpha * 0.3; g.fillStyle = color; g.fill(); g.restore();
+    }
+    g.beginPath(); pts.forEach((p, k) => k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]));
+    g.strokeStyle = css("--ink"); g.lineWidth = 1.6; g.lineJoin = "round"; g.stroke();
+    dots(); g.restore();
+  };
+  const wpAt = f => wpAtFrac(gm, f);
+  const dots = () => {
+    let ph = 0;
+    for (const s of gm.scoring || []) {
+      let color;
+      if (gm.league === "NFL") { color = s[1] > ph ? css("--home") : css("--away"); ph = s[1]; }
+      else if (s[1] === "6") color = css("--six"); else if (s[1] === "W") color = css("--wkt"); else continue;
+      const f = s[0] / (gm.n_steps - 1);
+      g.beginPath(); g.arc(X(f), Y(wpAt(f)), 3.6, 0, 7); g.fillStyle = color; g.fill();
+      g.lineWidth = 1.2; g.strokeStyle = css("--bg2"); g.stroke();
+    }
+  };
+  g.strokeStyle = css("--line"); g.setLineDash([4, 4]); g.lineWidth = 1;
+  g.beginPath(); g.moveTo(PAD.l, mid); g.lineTo(w - PAD.r, mid); g.stroke(); g.setLineDash([]);
+  if (gm.break_step) {
+    const x = X(gm.break_step / (gm.n_steps - 1));
+    g.strokeStyle = css("--ink2"); g.setLineDash([2, 4]); g.beginPath(); g.moveTo(x, PAD.t); g.lineTo(x, h - PAD.b); g.stroke(); g.setLineDash([]);
+    g.fillStyle = css("--ink2"); g.font = "11px system-ui"; g.fillText("innings break", x + 4, h - PAD.b - 4);
+  }
+  if (reveal) { layer(0.22, [0, w]); layer(1, [0, xNow]); } else layer(1, [0, w]);
+  // moment flags
+  g.font = "bold 10px system-ui"; g.textAlign = "center";
+  (gm.moments || []).forEach((m, k) => {
+    const x = X(m.step / (gm.n_steps - 1));
+    g.globalAlpha = reveal && x > xNow ? 0.45 : 1;
+    g.fillStyle = css("--song"); g.beginPath(); g.arc(x, PAD.t + 2, 7, 0, 7); g.fill();
+    g.fillStyle = "#fff"; g.fillText(String(k + 1), x, PAD.t + 5.5);
+  });
+  g.globalAlpha = 1; g.textAlign = "left";
+  g.fillStyle = css("--home"); g.font = "bold 12px system-ui"; g.fillText(`${teamA(gm)} ahead`, PAD.l + 4, PAD.t + 26);
+  g.fillStyle = css("--away"); g.fillText(`${teamB(gm)} ahead`, PAD.l + 4, h - PAD.b - 6);
+  if (xNow != null) {
+    const f = gameFracAt(now), y = Y(wpAt(f));
+    g.strokeStyle = css("--song"); g.lineWidth = 2.5; g.beginPath(); g.moveTo(xNow, PAD.t); g.lineTo(xNow, h - PAD.b + 4); g.stroke();
+    g.save(); g.shadowColor = css("--song"); g.shadowBlur = isPlaying() ? 14 : 0;
+    g.beginPath(); g.arc(xNow, y, 5.5, 0, 7); g.fillStyle = css("--song"); g.fill();
+    g.lineWidth = 2; g.strokeStyle = css("--bg2"); g.stroke(); g.restore();
+  }
+}
+const teamA = gm => gm.league === "NFL" ? gm.home_name : gm.home;
+const teamB = gm => gm.league === "NFL" ? gm.away_name : gm.away;
+
+function drawOverlay(now) {
+  const cv = $("ov"), { g, w, h } = setupCanvas(cv);
+  if (!st.song || !st.path) return;
+  const a = st.song, b = curveOf(st.cur), iw = w - PAD.l - PAD.r;
+  const band = (h - 28) / 2, topY = 6, botY = topY + band + 16;
+  const norm = (ys, y0) => { let lo = Infinity, hi = -Infinity; for (const v of ys) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+    return k => y0 + band - (ys[k] - lo) / (hi - lo || 1) * band; };
+  const ya = norm(a, topY), yb = norm(b, botY), X = k => PAD.l + k / (N - 1) * iw;
+  g.strokeStyle = css("--line"); g.lineWidth = 1;
+  st.path.forEach(([i, j], k) => { if (k % 6) return; g.beginPath(); g.moveTo(X(i), ya(i)); g.lineTo(X(j), yb(j)); g.stroke(); });
+  for (const [ys, y, color] of [[a, ya, css("--song")], [b, yb, css("--game")]]) {
+    g.beginPath(); for (let k = 0; k < N; k++) k ? g.lineTo(X(k), y(k)) : g.moveTo(X(k), y(k));
+    g.strokeStyle = color; g.lineWidth = 2.4; g.lineJoin = "round"; g.stroke();
+  }
+  g.font = "bold 11px system-ui"; g.fillStyle = css("--song"); g.fillText("YOUR SONG", PAD.l + 2, topY + 10);
+  g.fillStyle = css("--game"); g.fillText("THE GAME", PAD.l + 2, botY + 10);
+  if (now != null) {
+    const i = songIdx(now), j = lerp(st.jOfI, i);
+    g.strokeStyle = css("--flood"); g.lineWidth = 2.5;
+    g.beginPath(); g.moveTo(X(i), topY); g.lineTo(X(i), topY + band); g.lineTo(X(j), botY); g.lineTo(X(j), botY + band); g.stroke();
+  }
+}
+
+function redraw() { const t = now(); drawWP(t); drawOverlay(t); renderScoreboard(t); }
+const now = () => audio().currentTime || 0;
+
+// ---------- results ----------
+async function runSearch() {
+  if (!st.song) return;
+  const r = await ask({ type: "search", curve: st.songRaw, scope: st.scope });
+  if (!r.res) { status("That song is too flat to match: its energy barely changes."); return; }
+  st.res = r.res;
+  await showGame(r.res.top[0].i, r.res.top[0].dist);
+  renderRunners();
+}
+
+function countUp(el, target) {
+  if (reduced) { el.textContent = `${target}%`; return; }
+  const t0 = performance.now(), from = 0;
+  const step = ts => { const k = Math.min(1, (ts - t0) / 700), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = `${Math.round(from + (target - from) * e)}%`; if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+async function showGame(i, dist) {
+  st.cur = i;
+  const row = st.rows[i];
+  const resp = await fetch(`games/${row.id}.json`);
+  if (!resp.ok) throw Object.assign(new Error(`games/${row.id}.json: HTTP ${resp.status}`), { gameData: true });
+  const gm = await resp.json();
+  st.game = gm; st.shown = { l: null, r: null };
+  const { path } = S.dtwPath(st.song, curveOf(i));
+  st.path = path; buildMaps(path);
+  $("result").classList.remove("hidden");
+  $("r-badge").textContent = gm.league; $("r-badge").className = "badge " + gm.league;
+  $("r-for").textContent = `matched to “${st.songName}”`;
+  $("r-title").textContent = gm.title;
+  $("r-sub").textContent = [gm.league === "IPL" && gm.final, gm.nickname && `“${gm.nickname}”`].filter(Boolean).join(" · ");
+  const p = pctOf(dist);
+  $("r-pct").innerHTML = p == null ? "" : `<b id="pct-n">0%</b><span>shape match</span>`;
+  if (p != null) countUp($("pct-n"), p);
+  $("wp-hint").textContent = "tap the chart to jump";
+  $("wp-legend").innerHTML = gm.league === "NFL"
+    ? `<span><i style="background:${css("--home")}"></i>${gm.home_name} score</span><span><i style="background:${css("--away")}"></i>${gm.away_name} score</span><span><i style="background:${css("--song")}"></i>biggest swings</span>`
+    : `<span><i style="background:${css("--six")}"></i>six</span><span><i style="background:${css("--wkt")}"></i>wicket</span><span><i style="background:${css("--song")}"></i>biggest swings</span><span>${gm.home} batted first</span>`;
+  const ms = $("moments"); ms.innerHTML = "";
+  (gm.moments || []).forEach((m, k) => {
+    m.t = timeOfGameFrac(m.step / (gm.n_steps - 1));
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.innerHTML = `<span class="ts">${fmt(m.t)}</span><span><span class="clk">${k + 1} · ${m.clock}</span>${escapeHtml(m.desc)}</span>`;
+    b.onclick = () => seekTo(m.t, true);
+    if (now() > m.t) li.classList.add("hit");
+    li.appendChild(b); ms.appendChild(li);
+  });
+  const when = gm.title.split(" · ")[1] || "";
+  const who = gm.league === "NFL" ? `${gm.away_name} @ ${gm.home_name}` : `${gm.home} vs ${gm.away}`;
+  const link = location.protocol.startsWith("http") && !/^(localhost|127\.)/.test(location.hostname) ? " " + location.origin + location.pathname.replace(/index\.html$/, "") : "";
+  $("share-text").textContent = `“${st.songName}” is ${who}, ${when}. Which match is your song?${link}`;
+  document.querySelectorAll(".runner").forEach(el => el.setAttribute("aria-current", String(+el.dataset.i === i)));
+  st.lastT = now();
+  redraw();
+}
+
+function renderRunners() {
+  const box = $("runners"); box.innerHTML = "";
+  const seen = new Set(), list = [];
+  st.res.top.slice(1).forEach((r, k) => { list.push([r, `#${k + 2}`]); seen.add(r.i); });
+  seen.add(st.res.top[0].i);
+  for (const lg of ["nfl", "ipl"]) { const b = st.res["best_" + lg]; if (b && !seen.has(b.i) && st.scope === "both") { list.push([b, `Best ${lg.toUpperCase()}`]); seen.add(b.i); } }
+  for (const [r, label] of list.slice(0, 6)) {
+    const row = st.rows[r.i], b = document.createElement("button");
+    b.className = "runner"; b.dataset.i = r.i;
+    const p = pctOf(r.dist);
+    const star = row.famous ? ` <span class="classic" title="Classic games get a small boost in the ranking">★ classic</span>` : "";
+    b.innerHTML = `<span class="badge ${row.league}">${row.league}</span> <span class="rp">${label}${p != null ? " · " + p + "%" : ""}</span>${star}<span class="rt">${escapeHtml(row.title)}</span><canvas></canvas>`;
+    b.onclick = () => showGame(r.i, r.dist);
+    box.appendChild(b);
+    spark(b.querySelector("canvas"), curveOf(r.i), css("--game"));
+  }
+}
+
+// ---------- playback ----------
+function seekTo(t, play) {
+  t = Math.min(Math.max(t, 0), st.dur);
+  audio().currentTime = t; st.started = true;
+  document.querySelectorAll("#moments li").forEach((li, k) => { const m = st.game && st.game.moments[k]; li.classList.toggle("hit", !!m && t > m.t); });
+  st.lastT = t; redraw(); syncUI();
+  if (play && !isPlaying()) togglePlay();
+}
+const isPlaying = () => !audio().paused;
+function togglePlay() {
+  const a = audio();
+  if (a.paused) { st.started = true; a.play().catch(err => { console.warn(err); status("Couldn't play that audio."); }); }
+  else a.pause();
+}
+function syncUI() {
+  const t = now();
+  $("play").textContent = isPlaying() ? "❚❚ Pause" : "▶ Play";
+  $("seek").value = String(Math.round(t / (st.dur || 1) * 1000));
+  $("time").textContent = `${fmt(t)} / ${fmt(st.dur)}`;
+  document.querySelectorAll(".demo").forEach(d => d.classList.toggle("playing", d.dataset.key === st.demoKey && isPlaying()));
+  $("jumbo").classList.toggle("on", isPlaying());
+}
+function tick() {
+  const t = now();
+  if (st.game && st.game.moments) for (const [k, m] of st.game.moments.entries())
+    if (m.t != null && st.lastT < m.t && t >= m.t && t - m.t < 1.5) flash(k, m);
+  st.lastT = t;
+  redraw(); syncUI();
+  if (isPlaying()) requestAnimationFrame(tick);
+}
+
+// ---------- inputs ----------
+function setSource(src, dur) {
+  const a = audio();
+  a.pause();
+  if (a.src.startsWith("blob:")) URL.revokeObjectURL(a.src);
+  a.src = src; st.dur = dur; st.started = false; st.lastT = 0;
+}
+async function loadSong(file) {
+  if (!file) return;
+  status(`Reading “${file.name}”…`);
+  const t0 = performance.now();
+  let ab;
+  try {
+    const buf = await file.arrayBuffer();
+    ab = await new OfflineAudioContext(1, 1, 44100).decodeAudioData(buf);
+  } catch (err) {
+    console.warn(err);
+    status("Couldn't read that file. Try an mp3, m4a, wav or ogg.");
+    return;
+  }
+  try {
+    const x = new Float32Array(ab.length);
+    for (let c = 0; c < ab.numberOfChannels; c++) { const d = ab.getChannelData(c); for (let k = 0; k < x.length; k++) x[k] += d[k] / ab.numberOfChannels; }
+    status("Listening for the build-ups and drops…");
+    const { energy } = await ask({ type: "analyse", x, sr: ab.sampleRate }, [x.buffer]);
+    if (!energy) { status("That file is too short to analyse."); return; }
+    setSource(URL.createObjectURL(file), ab.duration);
+    st.songName = songName(file.name); st.songRaw = energy.curve; st.demoKey = null;
+    st.song = S.normalise(energy.curve); st.t0 = energy.t0; st.t1 = energy.t1;
+    document.querySelectorAll(".demo").forEach(e => e.setAttribute("aria-pressed", "false"));
+    status("Searching every game…");
+    await runSearch();
+    status(`Matched in ${((performance.now() - t0) / 1000).toFixed(1)} s.`);
+    syncUI();
+    $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    console.warn(err);
+    status(err.gameData ? "Your song was analysed, but the game data didn't load. Refresh the page and try again."
+                        : "Something went wrong while matching. Refresh the page and try again.");
+  }
+}
+async function useDemo(key, play) {
+  const d = st.demos.find(x => x.key === key);
+  setSource(d.file, d.duration);
+  st.songName = shortPiece(d.piece); st.songRaw = d.curve; st.song = S.normalise(d.curve);
+  st.t0 = d.t0; st.t1 = d.t1; st.demoKey = key;
+  document.querySelectorAll(".demo").forEach(e => e.setAttribute("aria-pressed", String(e.dataset.key === key)));
+  try {
+    await runSearch();
+    syncUI();
+    if (play) { togglePlay(); $("result").scrollIntoView({ behavior: "smooth", block: "start" }); }
+  } catch (err) { console.warn(err); status("The game data didn't load. Refresh the page and try again."); }
+}
+
+function wireUI() {
+  $("choose").onclick = () => $("file").click();
+  $("file").onchange = e => loadSong(e.target.files[0]);
+  const drop = $("drop");
+  ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => loadSong(e.dataTransfer.files[0]));
+  $("play").onclick = togglePlay;
+  $("back").onclick = () => seekTo(now() - 10);
+  $("fwd").onclick = () => seekTo(now() + 10);
+  $("seek").oninput = e => seekTo(e.target.value / 1000 * st.dur);
+  const a = audio();
+  a.addEventListener("play", () => { syncUI(); requestAnimationFrame(tick); });
+  a.addEventListener("pause", () => { syncUI(); redraw(); });
+  a.addEventListener("ended", () => { syncUI(); redraw(); });
+  a.addEventListener("loadedmetadata", () => { st.dur = a.duration || st.dur; syncUI(); });
+  $("wp").onclick = e => { const r = e.currentTarget.getBoundingClientRect(); const f = (e.clientX - r.left - PAD.l) / (r.width - PAD.l - PAD.r); seekTo(timeOfGameFrac(Math.min(1, Math.max(0, f)))); };
+  $("ov").onclick = e => { const r = e.currentTarget.getBoundingClientRect(); const f = (e.clientX - r.left - PAD.l) / (r.width - PAD.l - PAD.r); seekTo(timeOfSongIdx(Math.min(1, Math.max(0, f)) * (N - 1))); };
+  document.querySelectorAll(".scope button").forEach(b => b.onclick = () => {
+    st.scope = b.dataset.scope;
+    document.querySelectorAll(".scope button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    renderDemos();
+    if (st.song) runSearch();
+  });
+  $("copy").onclick = async () => {
+    const t = $("share-text").textContent;
+    try { await navigator.clipboard.writeText(t); } catch { const r = document.createRange(); r.selectNodeContents($("share-text")); getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand("copy"); }
+    $("copy").textContent = "Copied!"; setTimeout(() => $("copy").textContent = "Copy", 1500);
+  };
+  window.addEventListener("resize", () => { redraw(); document.querySelectorAll(".demo canvas, .runner canvas").forEach(c => c.dispatchEvent(new Event("redraw"))); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { renderDemos(); st.res && renderRunners(); redraw(); });
+}
+
+function renderDemos() {
+  const box = $("demos"); box.innerHTML = "";
+  for (const d of st.demos) {
+    const id = st.scope === "both" ? d.top[0] : d["best_" + st.scope.toLowerCase()];
+    const row = st.rows.find(r => r.id === id);
+    const b = document.createElement("button");
+    b.className = "demo"; b.dataset.key = d.key; b.setAttribute("aria-pressed", String(st.demoKey === d.key));
+    b.setAttribute("aria-label", `${d.shape}: ${d.piece} by ${d.composer}. Play and match.`);
+    b.innerHTML = `<span class="d-shape">${escapeHtml(d.shape)}</span><b class="d-piece">${escapeHtml(shortPiece(d.piece))}</b>` +
+      `<span class="d-comp">${escapeHtml(d.composer)}</span><span class="d-blurb">${escapeHtml(d.blurb)}</span><canvas></canvas>` +
+      `<span class="d-match">→ ${row ? escapeHtml(row.title) : "no match in this league"}</span>` +
+      `<span class="d-play" aria-hidden="true"></span><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>`;
+    b.onclick = () => (st.demoKey === d.key && !isPlaying() && st.game) ? togglePlay() : useDemo(d.key, true);
+    box.appendChild(b);
+    const cv = b.querySelector("canvas"), draw = () => spark(cv, d.curve, css("--song"));
+    cv.addEventListener("redraw", draw); draw();
+  }
+  syncUI();
+}
+
+function renderCredits() {
+  $("credits").innerHTML = st.demos.map(d => `<div><b>${escapeHtml(d.composer)}: ${escapeHtml(d.piece)}</b>` +
+    `Performed by ${escapeHtml(d.performer)}` + (d.producer ? `, <a href="${d.producer_url}">${escapeHtml(d.producer)}</a>` : "") + `.<br>` +
+    `Via <a href="${d.source}">classicals.de</a>. Re-encoded to 128 kbps MP3.<br>` +
+    `<a class="lic" href="${d.licence_url}">${escapeHtml(d.licence)}</a></div>`).join("");
+}
+
+function renderMetrics(m) {
+  const el = $("metrics");
+  if (!m || !m.models) { el.textContent = "IPL win-probability model: metrics will appear once the IPL data is built."; return; }
+  const s = m.models[m.shipped], b = m.models.logreg_pooled, isLR = m.shipped === "logreg_pooled";
+  el.innerHTML = `<b>IPL win-probability model</b> (${isLR ? "logistic regression" : "LightGBM, calibrated"}), tested on ${m.test_matches} IPL matches from ${m.test_seasons.replace("IPL ", "")}: ` +
+    `log loss <b>${s.log_loss.toFixed(3)}</b>, Brier <b>${s.brier.toFixed(3)}</b>` +
+    (isLR ? "." : ` (plain logistic regression: ${b.log_loss.toFixed(3)} / ${b.brier.toFixed(3)}).`) +
+    ` Both measure how far the predicted chances sit from what actually happened, ball by ball; lower is better, and a coin-flip guess scores 0.693 / 0.25.`;
+}
+
+async function init() {
+  wireUI();
+  status("Loading the game index…");
+  const [idx, bin, demos] = await Promise.all([fetch("index.json").then(r => r.json()), fetch("index.bin").then(r => r.arrayBuffer()),
+                                               fetch("demo/demos.json").then(r => r.ok ? r.json() : []).catch(() => [])]);
+  st.idx = idx; st.rows = idx.rows.map(r => Object.fromEntries(idx.fields.map((f, k) => [f, r[k]])));
+  st.Q = new Int8Array(bin); st.demos = demos;
+  const nIpl = st.rows.filter(r => r.league === "IPL").length;
+  if (!nIpl) document.querySelector('.scope [data-scope="IPL"]').disabled = true;
+  await makeWorker();
+  worker.postMessage({ type: "index", Q: bin.slice(0), rows: st.rows.map(r => ({ league: r.league, famous: r.famous })), scale: idx.scale });
+  status(`${st.rows.length.toLocaleString()} games ready (${(st.rows.length - nIpl).toLocaleString()} NFL, ${nIpl.toLocaleString()} IPL).`);
+  renderDemos(); renderCredits();
+  fetch("metrics.json").then(r => r.ok ? r.json() : null).then(renderMetrics).catch(() => renderMetrics(null));
+  if (st.demos.length) useDemo(st.demos[0].key, false);   // show a result straight away; nothing plays until asked
+}
+init().catch(err => { console.error(err); status("Couldn't load the game index."); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Match Is Your Song?</title>
+<meta name="description" content="Drop in a song. We find the NFL game or IPL match whose tension rises and falls the same way.">
+<style>
+:root {
+  --bg: #f4f1ea; --bg2: #ffffff; --ink: #121a2b; --ink2: #4a5468; --line: #d9d3c6;
+  --flood: #c98a00; --song: #d81b60; --game: #0077b6; --home: #0077b6; --away: #e4572e;
+  --six: #c98a00; --wkt: #d62828; --chip: #ebe6da; --shadow: 0 6px 24px rgba(18,26,43,.08);
+  --hero1: #fff6dc; --hero2: #f4f1ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #070b16; --bg2: #101829; --ink: #f3f5fa; --ink2: #9aa6bf; --line: #24304a;
+    --flood: #ffd23f; --song: #ff4f8b; --game: #3ad1ff; --home: #3ad1ff; --away: #ff8a4c;
+    --six: #ffd23f; --wkt: #ff5252; --chip: #18223a; --shadow: 0 8px 30px rgba(0,0,0,.45);
+    --hero1: #17213b; --hero2: #070b16;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--game); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+header.hero {
+  background: radial-gradient(ellipse 70% 120% at 15% -20%, var(--hero1), transparent 60%),
+              radial-gradient(ellipse 60% 110% at 90% -30%, var(--hero1), transparent 60%), var(--hero2);
+  border-bottom: 1px solid var(--line); padding: 36px 0 28px;
+}
+.kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--flood); font-weight: 800; }
+h1 { font-size: clamp(30px, 6vw, 52px); line-height: 1.02; margin: 6px 0 10px; font-weight: 900; letter-spacing: -.02em; }
+h1 em { font-style: normal; color: var(--song); }
+.lede { color: var(--ink2); max-width: 640px; margin: 0 0 20px; font-size: 17px; }
+.drop { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; border: 2px dashed var(--line); border-radius: 18px; padding: 16px; transition: border-color .15s, background .15s; }
+.drop.over { border-color: var(--song); background: color-mix(in srgb, var(--song) 8%, transparent); }
+.btn { appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 800; border-radius: 999px; }
+.btn.big { background: var(--song); color: #fff; padding: 14px 26px; font-size: 18px; box-shadow: 0 6px 20px color-mix(in srgb, var(--song) 40%, transparent); }
+.btn.big:hover { filter: brightness(1.08); }
+.small { font-size: 13px; color: var(--ink2); }
+.status { font-size: 14px; color: var(--ink2); min-height: 1.5em; }
+.scope { display: inline-flex; background: var(--chip); border-radius: 999px; padding: 3px; gap: 2px; }
+.scope button { background: transparent; color: var(--ink2); padding: 6px 14px; font-size: 14px; }
+.scope button[aria-pressed="true"] { background: var(--bg2); color: var(--ink); box-shadow: var(--shadow); }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin: 22px 0 10px; }
+h2 { font-size: 22px; margin: 0; font-weight: 900; letter-spacing: -.01em; }
+.examples { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.ex { background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; text-align: left; color: inherit; font: inherit; }
+.ex[aria-pressed="true"] { border-color: var(--song); box-shadow: 0 0 0 2px color-mix(in srgb, var(--song) 35%, transparent); }
+.ex b { display: block; font-size: 15px; }
+.ex .t { font-size: 12.5px; color: var(--ink2); line-height: 1.35; display: block; margin-top: 4px; min-height: 2.7em; }
+.ex canvas { width: 100%; height: 44px; display: block; margin-top: 6px; }
+.card { background: var(--bg2); border: 1px solid var(--line); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); }
+.res-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.badge { display: inline-block; font-size: 11px; font-weight: 900; letter-spacing: .08em; padding: 3px 8px; border-radius: 6px; color: #fff; vertical-align: middle; }
+.badge.NFL { background: #013369; } .badge.IPL { background: #6a1b9a; }
+@media (prefers-color-scheme: dark) { .badge.NFL { background: #1d5fbf; } .badge.IPL { background: #9c4dcc; } }
+.res-title { font-size: clamp(20px, 3.4vw, 28px); font-weight: 900; line-height: 1.15; margin: 6px 0 2px; }
+.res-sub { color: var(--ink2); font-size: 14px; }
+.pct { text-align: right; }
+.pct b { font-size: 34px; font-weight: 900; color: var(--flood); line-height: 1; display: block; }
+.pct span { font-size: 12px; color: var(--ink2); }
+.panel-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink2); margin: 16px 0 4px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.chart { position: relative; width: 100%; }
+.chart canvas { width: 100%; display: block; cursor: pointer; touch-action: manipulation; }
+#wp { height: 210px; } #ov { height: 170px; }
+.player { display: flex; gap: 8px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+.player .btn { background: var(--chip); color: var(--ink); padding: 8px 14px; font-size: 14px; }
+.player .btn.play { background: var(--ink); color: var(--bg2); min-width: 86px; }
+.player input[type=range] { flex: 1 1 160px; accent-color: var(--song); }
+.time { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink2); min-width: 88px; text-align: right; }
+.moments { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+.moments li button { width: 100%; text-align: left; display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: baseline; background: var(--chip); border: 0; border-radius: 10px; padding: 9px 12px; color: inherit; font: inherit; font-size: 14px; cursor: pointer; }
+.moments li button:hover { outline: 2px solid color-mix(in srgb, var(--song) 50%, transparent); }
+.moments .ts { font-weight: 900; color: var(--song); font-variant-numeric: tabular-nums; }
+.moments .clk { font-weight: 700; color: var(--ink2); margin-right: 6px; }
+.toast { position: absolute; right: 10px; top: 10px; max-width: min(340px, 80%); background: var(--ink); color: var(--bg2); border-radius: 12px; padding: 10px 12px; font-size: 13px; line-height: 1.35; box-shadow: var(--shadow); opacity: 0; transform: translateY(-6px); transition: opacity .2s, transform .2s; pointer-events: none; }
+.toast.on { opacity: .96; transform: none; }
+.toast b { color: var(--flood); }
+.runners { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+.runner { background: var(--chip); border: 0; border-radius: 12px; padding: 10px; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+.runner:hover { outline: 2px solid color-mix(in srgb, var(--game) 50%, transparent); }
+.runner .rt { font-size: 12.5px; line-height: 1.3; display: block; margin-top: 4px; min-height: 3.9em; }
+.runner .rp { font-size: 12px; color: var(--flood); font-weight: 900; }
+.runner .classic { font-size: 11px; color: var(--ink2); white-space: nowrap; }
+.runner canvas { width: 100%; height: 34px; display: block; margin-top: 4px; }
+.share { display: flex; gap: 8px; align-items: center; margin-top: 16px; background: var(--chip); border-radius: 12px; padding: 10px 12px; flex-wrap: wrap; }
+.share code { flex: 1 1 220px; font: 14px/1.4 inherit; font-family: inherit; }
+.share .btn { background: var(--song); color: #fff; padding: 7px 14px; font-size: 14px; }
+.how { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 10px; }
+.how div { background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; font-size: 14px; color: var(--ink2); }
+.how b { display: block; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+.metrics { margin-top: 12px; font-size: 14px; color: var(--ink2); background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+footer { color: var(--ink2); font-size: 13px; padding: 30px 0 40px; border-top: 1px solid var(--line); margin-top: 36px; }
+.hidden { display: none !important; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink2); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+@media (max-width: 760px) {
+  .examples { grid-template-columns: 1fr; }
+  .ex { display: grid; grid-template-columns: 1fr 110px; gap: 8px; align-items: center; }
+  .ex canvas { margin: 0; grid-row: 1 / span 2; grid-column: 2; }
+  .ex .t { min-height: 0; }
+  .runners { grid-template-columns: repeat(2, 1fr); }
+  .how { grid-template-columns: 1fr 1fr; }
+  #wp { height: 180px; } #ov { height: 150px; }
+  .pct b { font-size: 26px; }
+  .panel-label span + span { display: none; }
+}
+@media (max-width: 420px) { .how { grid-template-columns: 1fr; } .card { padding: 14px; } }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">NFL · IPL · any song</div>
+    <h1>Which match is <em>your song</em>?</h1>
+    <p class="lede">Every song builds, explodes and drops. So does every game. Pick a song and we search thousands of NFL games and IPL matches for the one whose tension rises and falls the same way. Then the drop lands on the interception.</p>
+    <div class="drop" id="drop">
+      <button class="btn big" id="choose">Choose a song</button>
+      <input type="file" id="file" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" class="hidden">
+      <div>
+        <div class="small">…or drop an audio file here. mp3, m4a, wav or ogg.</div>
+        <div class="small"><b>Your song never leaves your device.</b> It is analysed right here in your browser.</div>
+      </div>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="row">
+    <h2 id="examples-h">No song handy? Try a shape</h2>
+    <div class="scope" role="group" aria-label="Search scope">
+      <button class="btn" data-scope="NFL" aria-pressed="false">NFL</button>
+      <button class="btn" data-scope="IPL" aria-pressed="false">IPL</button>
+      <button class="btn" data-scope="both" aria-pressed="true">Both</button>
+    </div>
+  </div>
+  <div class="examples" id="examples"></div>
+
+  <section id="result" class="card hidden" style="margin-top:18px" aria-live="polite">
+    <div class="res-head">
+      <div>
+        <div><span class="badge" id="r-badge"></span> <span class="small" id="r-for"></span></div>
+        <div class="res-title" id="r-title"></div>
+        <div class="res-sub" id="r-sub"></div>
+      </div>
+      <div class="pct" id="r-pct"></div>
+    </div>
+
+    <div class="panel-label"><span>Win probability</span><span id="wp-hint"></span></div>
+    <div class="chart"><canvas id="wp" aria-label="Win probability chart"></canvas><div class="toast" id="toast"></div></div>
+    <div class="legend" id="wp-legend"></div>
+
+    <div class="panel-label"><span>Song energy ↔ game tension, aligned</span><span>lines show which moment matches which</span></div>
+    <div class="chart"><canvas id="ov" aria-label="Song energy and game tension aligned"></canvas></div>
+
+    <div class="player">
+      <button class="btn play" id="play">▶ Play</button>
+      <button class="btn" id="back" aria-label="Back 10 seconds">−10s</button>
+      <button class="btn" id="fwd" aria-label="Forward 10 seconds">+10s</button>
+      <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Seek">
+      <span class="time" id="time">0:00 / 0:00</span>
+    </div>
+    <audio id="audio" preload="auto" class="hidden"></audio>
+
+    <div class="panel-label"><span>The five biggest swings, on your song's clock</span></div>
+    <ul class="moments" id="moments"></ul>
+
+    <div class="panel-label"><span>Runners-up</span></div>
+    <div class="runners" id="runners"></div>
+
+    <div class="share">
+      <code id="share-text"></code>
+      <button class="btn" id="copy">Copy</button>
+    </div>
+  </section>
+
+  <div class="row" style="margin-top:36px"><h2>How it works</h2></div>
+  <div class="how">
+    <div><b>1 · Your song becomes a line</b>Loudness plus how busy the sound is, every 23 ms, smoothed over ~3 s.</div>
+    <div><b>2 · Every game becomes a line</b>Tension = how much the next play could swing the result, plus how much it just did.</div>
+    <div><b>3 · Shapes get compared</b>Both lines are stretched to 200 points and matched with a time-warp that may bend each by at most 5%. ★ Classic games get a small boost in the ranking.</div>
+    <div><b>4 · Win probability</b>NFL: nflverse's model. IPL: our own model, trained on every men's T20 match on Cricsheet.</div>
+  </div>
+  <div class="metrics" id="metrics">IPL model metrics load with the index.</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    NFL play-by-play and win probability: <a href="https://github.com/nflverse">nflverse / nflfastR</a>. Cricket ball-by-ball: <a href="https://cricsheet.org">Cricsheet</a>. IPL win probability is our own model, not an official one. No logos, no song audio hosted, no tracking. A fan toy, not affiliated with the NFL or the IPL.
+  </div>
+</footer>
+
+<script src="core.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const S = SongMatch, N = S.N;
+const st = { idx: null, rows: null, Q: null, scope: "both", song: null, res: null, cur: null, game: null,
+             path: null, jOfI: null, iOfJ: null, t0: 0, t1: 30, dur: 30, audio: false, songName: "",
+             vt: 0, vplay: false, vlast: 0, lastT: 0, toastTimer: 0, exKey: null };
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------- worker (built from a blob: URL so the page never freezes) ----------
+let worker, reqId = 0;
+const pending = new Map();
+async function makeWorker() {
+  const core = await (await fetch("core.js")).text();
+  const body = `${core}
+let Q = null, rows = null, scale = 32;
+onmessage = e => {
+  const m = e.data;
+  if (m.type === "index") { Q = new Int8Array(m.Q); rows = m.rows; scale = m.scale; return; }
+  if (m.type === "analyse") {
+    const en = SongMatch.energyCurve(m.x, m.sr);
+    postMessage({ id: m.id, energy: en });
+    return;
+  }
+  if (m.type === "search") {
+    const a = SongMatch.normalise(m.curve);
+    postMessage({ id: m.id, a, res: a ? SongMatch.search(a, Q, rows, scale, m.scope) : null });
+  }
+};`;
+  worker = new Worker(URL.createObjectURL(new Blob([body], { type: "text/javascript" })));
+  worker.onmessage = e => { const p = pending.get(e.data.id); pending.delete(e.data.id); p && p(e.data); };
+}
+const ask = (msg, transfer) => new Promise(r => { const id = ++reqId; pending.set(id, r); worker.postMessage({ ...msg, id }, transfer || []); });
+
+// ---------- helpers ----------
+const fmt = s => { s = Math.max(0, s); return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`; };
+const pctOf = d => st.idx.pct ? Math.round(100 * Math.exp(-d / st.idx.pct.s)) : null;
+const curveOf = i => { const out = new Array(N); for (let k = 0; k < N; k++) out[k] = st.Q[i * N + k] / st.idx.scale; return out; };
+function setupCanvas(cv) {
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const w = Math.max(10, Math.round(r.width)), h = Math.max(10, Math.round(r.height));
+  if (cv.width !== w * dpr || cv.height !== h * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  return { g, w, h };
+}
+function spark(cv, ys, color) {
+  const { g, w, h } = setupCanvas(cv);
+  let lo = Infinity, hi = -Infinity; for (const v of ys) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  g.beginPath();
+  ys.forEach((v, k) => { const x = k / (ys.length - 1) * w, y = h - 3 - (v - lo) / (hi - lo || 1) * (h - 6); k ? g.lineTo(x, y) : g.moveTo(x, y); });
+  g.strokeStyle = color; g.lineWidth = 2; g.lineJoin = "round"; g.stroke();
+}
+function songName(file) {
+  return file.replace(/\.[^.]+$/, "").replace(/^\s*(\d{1,3}|[A-D]\d{1,2})\s*[-._)\]]?\s+/, "").replace(/_/g, " ").trim() || "My song";
+}
+function status(t) { $("status").textContent = t; }
+
+// ---------- alignment: song index i <-> game index j via the DTW path ----------
+function buildMaps(path) {
+  const sj = new Float64Array(N), cj = new Float64Array(N), si = new Float64Array(N), ci = new Float64Array(N);
+  for (const [i, j] of path) { sj[i] += j; cj[i]++; si[j] += i; ci[j]++; }
+  st.jOfI = Array.from(sj, (v, k) => v / cj[k]); st.iOfJ = Array.from(si, (v, k) => v / ci[k]);
+}
+const lerp = (arr, x) => { x = Math.min(N - 1, Math.max(0, x)); const a = Math.floor(x), b = Math.min(N - 1, a + 1); return arr[a] + (arr[b] - arr[a]) * (x - a); };
+const songIdx = t => (t - st.t0) / (st.t1 - st.t0 || 1) * (N - 1);
+const timeOfSongIdx = i => st.t0 + i / (N - 1) * (st.t1 - st.t0);
+const gameFracAt = t => lerp(st.jOfI, songIdx(t)) / (N - 1);
+const timeOfGameFrac = f => timeOfSongIdx(lerp(st.iOfJ, f * (N - 1)));
+
+// ---------- drawing ----------
+const PAD = { l: 8, r: 8, t: 10, b: 18 };
+function drawWP(now) {
+  const cv = $("wp"), { g, w, h } = setupCanvas(cv), gm = st.game;
+  if (!gm) return;
+  const wp = gm.wp, iw = w - PAD.l - PAD.r, ih = h - PAD.t - PAD.b;
+  const X = f => PAD.l + f * iw, Y = p => PAD.t + (1 - p) * ih, mid = Y(0.5);
+  const pts = wp.map((p, k) => [X(k / (wp.length - 1)), Y(p)]);
+  const area = () => { g.beginPath(); g.moveTo(pts[0][0], mid); pts.forEach(p => g.lineTo(p[0], p[1])); g.lineTo(pts[pts.length - 1][0], mid); g.closePath(); };
+  for (const [top, color] of [[true, css("--home")], [false, css("--away")]]) {
+    g.save(); g.beginPath(); top ? g.rect(0, 0, w, mid) : g.rect(0, mid, w, h); g.clip();
+    area(); g.globalAlpha = 0.28; g.fillStyle = color; g.fill(); g.globalAlpha = 1; g.restore();
+  }
+  g.strokeStyle = css("--line"); g.setLineDash([4, 4]); g.lineWidth = 1;
+  g.beginPath(); g.moveTo(PAD.l, mid); g.lineTo(w - PAD.r, mid); g.stroke(); g.setLineDash([]);
+  if (gm.break_step) {
+    const x = X(gm.break_step / (gm.n_steps - 1));
+    g.strokeStyle = css("--ink2"); g.setLineDash([2, 4]); g.beginPath(); g.moveTo(x, PAD.t); g.lineTo(x, h - PAD.b); g.stroke(); g.setLineDash([]);
+    g.fillStyle = css("--ink2"); g.font = "11px system-ui"; g.fillText("innings break", x + 4, h - PAD.b - 4);
+  }
+  g.beginPath(); pts.forEach((p, k) => k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]));
+  g.strokeStyle = css("--ink"); g.lineWidth = 1.6; g.lineJoin = "round"; g.stroke();
+  const wpAt = f => { const x = f * (wp.length - 1), a = Math.floor(x), b = Math.min(wp.length - 1, a + 1); return wp[a] + (wp[b] - wp[a]) * (x - a); };
+  // scoring plays (NFL: who scored; IPL: sixes and wickets)
+  let ph = 0, pa = 0;
+  for (const s of gm.scoring || []) {
+    let color;
+    if (gm.league === "NFL") { color = s[1] > ph ? css("--home") : css("--away"); ph = s[1]; pa = s[2]; }
+    else if (s[1] === "6") color = css("--six"); else if (s[1] === "W") color = css("--wkt"); else continue;
+    const f = s[0] / (gm.n_steps - 1);
+    g.beginPath(); g.arc(X(f), Y(wpAt(f)), 3.6, 0, 7); g.fillStyle = color; g.fill();
+    g.lineWidth = 1.2; g.strokeStyle = css("--bg2"); g.stroke();
+  }
+  // moment flags
+  g.font = "bold 10px system-ui"; g.textAlign = "center";
+  (gm.moments || []).forEach((m, k) => {
+    const x = X(m.step / (gm.n_steps - 1));
+    g.fillStyle = css("--song"); g.beginPath(); g.arc(x, PAD.t + 2, 7, 0, 7); g.fill();
+    g.fillStyle = "#fff"; g.fillText(String(k + 1), x, PAD.t + 5.5);
+  });
+  g.textAlign = "left";
+  g.fillStyle = css("--home"); g.font = "bold 12px system-ui"; g.fillText(`${teamA(gm)} ahead`, PAD.l + 4, PAD.t + 26);
+  g.fillStyle = css("--away"); g.fillText(`${teamB(gm)} ahead`, PAD.l + 4, h - PAD.b - 6);
+  if (now != null) {
+    const x = X(gameFracAt(now));
+    g.strokeStyle = css("--song"); g.lineWidth = 2.5; g.beginPath(); g.moveTo(x, PAD.t); g.lineTo(x, h - PAD.b + 4); g.stroke();
+  }
+}
+const teamA = gm => gm.league === "NFL" ? gm.home_name : gm.home;
+const teamB = gm => gm.league === "NFL" ? gm.away_name : gm.away;
+
+function drawOverlay(now) {
+  const cv = $("ov"), { g, w, h } = setupCanvas(cv);
+  if (!st.song || !st.path) return;
+  const a = st.song, b = curveOf(st.cur), iw = w - PAD.l - PAD.r;
+  const band = (h - 28) / 2, topY = 6, botY = topY + band + 16;
+  const norm = (ys, y0) => { let lo = Infinity, hi = -Infinity; for (const v of ys) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+    return k => y0 + band - (ys[k] - lo) / (hi - lo || 1) * band; };
+  const ya = norm(a, topY), yb = norm(b, botY), X = k => PAD.l + k / (N - 1) * iw;
+  g.strokeStyle = css("--line"); g.lineWidth = 1;
+  st.path.forEach(([i, j], k) => { if (k % 6) return; g.beginPath(); g.moveTo(X(i), ya(i)); g.lineTo(X(j), yb(j)); g.stroke(); });
+  for (const [ys, y, color] of [[a, ya, css("--song")], [b, yb, css("--game")]]) {
+    g.beginPath(); for (let k = 0; k < N; k++) k ? g.lineTo(X(k), y(k)) : g.moveTo(X(k), y(k));
+    g.strokeStyle = color; g.lineWidth = 2.4; g.lineJoin = "round"; g.stroke();
+  }
+  g.font = "bold 11px system-ui"; g.fillStyle = css("--song"); g.fillText("YOUR SONG", PAD.l + 2, topY + 10);
+  g.fillStyle = css("--game"); g.fillText("THE GAME", PAD.l + 2, botY + 10);
+  if (now != null) {
+    const i = songIdx(now), j = lerp(st.jOfI, i);
+    g.strokeStyle = css("--flood"); g.lineWidth = 2.5;
+    g.beginPath(); g.moveTo(X(i), topY); g.lineTo(X(i), topY + band); g.lineTo(X(j), botY); g.lineTo(X(j), botY + band); g.stroke();
+  }
+}
+
+function redraw() { const t = now(); drawWP(t); drawOverlay(t); }
+const now = () => st.audio ? $("audio").currentTime : st.vt;
+
+// ---------- results ----------
+async function runSearch() {
+  if (!st.song) return;
+  const r = await ask({ type: "search", curve: st.songRaw, scope: st.scope });
+  if (!r.res) { status("That song is too flat to match: its energy barely changes."); return; }
+  st.res = r.res;
+  await showGame(r.res.top[0].i, r.res.top[0].dist);
+  renderRunners();
+}
+
+async function showGame(i, dist) {
+  st.cur = i;
+  const row = st.rows[i];
+  const resp = await fetch(`games/${row.id}.json`);
+  if (!resp.ok) throw Object.assign(new Error(`games/${row.id}.json: HTTP ${resp.status}`), { gameData: true });
+  const gm = await resp.json();
+  st.game = gm;
+  const { path } = S.dtwPath(st.song, curveOf(i));
+  st.path = path; buildMaps(path);
+  $("result").classList.remove("hidden");
+  $("r-badge").textContent = gm.league; $("r-badge").className = "badge " + gm.league;
+  $("r-for").textContent = st.audio ? `matched to “${st.songName}”` : `example shape: ${st.songName}`;
+  $("r-title").textContent = gm.title;
+  $("r-sub").textContent = [gm.league === "IPL" && gm.final, gm.nickname && `“${gm.nickname}”`].filter(Boolean).join(" · ");
+  const p = pctOf(dist);
+  $("r-pct").innerHTML = p == null ? "" : `<b>${p}%</b><span>shape match</span>`;
+  $("wp-hint").textContent = "tap the chart to jump";
+  $("wp-legend").innerHTML = gm.league === "NFL"
+    ? `<span><i style="background:${css("--home")}"></i>${gm.home_name} score</span><span><i style="background:${css("--away")}"></i>${gm.away_name} score</span><span><i style="background:${css("--song")}"></i>biggest swings</span>`
+    : `<span><i style="background:${css("--six")}"></i>six</span><span><i style="background:${css("--wkt")}"></i>wicket</span><span><i style="background:${css("--song")}"></i>biggest swings</span><span>${gm.home} batted first</span>`;
+  const ms = $("moments"); ms.innerHTML = "";
+  (gm.moments || []).forEach((m, k) => {
+    m.t = timeOfGameFrac(m.step / (gm.n_steps - 1));
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.innerHTML = `<span class="ts">${fmt(m.t)}</span><span><span class="clk">${k + 1} · ${m.clock}</span>${escapeHtml(m.desc)}</span>`;
+    b.onclick = () => seekTo(m.t, true);
+    li.appendChild(b); ms.appendChild(li);
+  });
+  const when = gm.title.split(" · ")[1] || "";
+  const who = gm.league === "NFL" ? `${gm.away_name} @ ${gm.home_name}` : `${gm.home} vs ${gm.away}`;
+  $("share-text").textContent = `“${st.songName}” is ${who}, ${when}. Which match is your song?`;
+  document.querySelectorAll(".runner").forEach(el => el.setAttribute("aria-current", String(+el.dataset.i === i)));
+  st.lastT = now();
+  redraw();
+}
+
+function renderRunners() {
+  const box = $("runners"); box.innerHTML = "";
+  const seen = new Set(), list = [];
+  st.res.top.slice(1).forEach((r, k) => { list.push([r, `#${k + 2}`]); seen.add(r.i); });
+  seen.add(st.res.top[0].i);
+  for (const lg of ["nfl", "ipl"]) { const b = st.res["best_" + lg]; if (b && !seen.has(b.i) && st.scope === "both") { list.push([b, `Best ${lg.toUpperCase()}`]); seen.add(b.i); } }
+  for (const [r, label] of list.slice(0, 6)) {
+    const row = st.rows[r.i], b = document.createElement("button");
+    b.className = "runner"; b.dataset.i = r.i;
+    const p = pctOf(r.dist);
+    const star = row.famous ? ` <span class="classic" title="Classic games get a small boost in the ranking">★ classic</span>` : "";
+    b.innerHTML = `<span class="badge ${row.league}">${row.league}</span> <span class="rp">${label}${p != null ? " · " + p + "%" : ""}</span>${star}<span class="rt">${escapeHtml(row.title)}</span><canvas></canvas>`;
+    b.onclick = () => showGame(r.i, r.dist);
+    box.appendChild(b);
+    spark(b.querySelector("canvas"), curveOf(r.i), css("--game"));
+  }
+}
+const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---------- playback (real audio, or a silent 30 s preview for example shapes) ----------
+function seekTo(t, play) {
+  t = Math.min(Math.max(t, 0), st.dur);
+  if (st.audio) $("audio").currentTime = t; else st.vt = t;
+  st.lastT = t; redraw(); syncUI();
+  if (play && !isPlaying()) togglePlay();
+}
+const isPlaying = () => st.audio ? !$("audio").paused : st.vplay;
+function togglePlay() {
+  if (st.audio) { const a = $("audio"); a.paused ? a.play() : a.pause(); }
+  else { st.vplay = !st.vplay; st.vlast = performance.now(); if (st.vt >= st.dur) st.vt = 0; }
+  syncUI(); requestAnimationFrame(tick);
+}
+function syncUI() {
+  const t = now();
+  $("play").textContent = isPlaying() ? "❚❚ Pause" : (st.audio ? "▶ Play" : "▶ Preview");
+  $("seek").value = String(Math.round(t / (st.dur || 1) * 1000));
+  $("time").textContent = `${fmt(t)} / ${fmt(st.dur)}`;
+}
+function tick(ts) {
+  if (!st.audio && st.vplay) {
+    st.vt += (ts - st.vlast) / 1000; st.vlast = ts;
+    if (st.vt >= st.dur) { st.vt = st.dur; st.vplay = false; }
+  }
+  const t = now();
+  if (st.game && st.game.moments) for (const [k, m] of st.game.moments.entries())
+    if (m.t != null && st.lastT < m.t && t >= m.t && t - m.t < 1.5) showToast(k, m);
+  st.lastT = t;
+  redraw(); syncUI();
+  if (isPlaying()) requestAnimationFrame(tick);
+}
+function showToast(k, m) {
+  const el = $("toast");
+  el.innerHTML = `<b>${k + 1} · ${escapeHtml(m.clock)}</b><br>${escapeHtml(m.desc)}`;
+  el.classList.add("on"); clearTimeout(st.toastTimer);
+  st.toastTimer = setTimeout(() => el.classList.remove("on"), 3800);
+}
+
+// ---------- inputs ----------
+async function loadSong(file) {
+  if (!file) return;
+  status(`Reading “${file.name}”…`);
+  const t0 = performance.now();
+  let ab;
+  try {
+    const buf = await file.arrayBuffer();
+    ab = await new OfflineAudioContext(1, 1, 44100).decodeAudioData(buf);
+  } catch (err) {
+    console.warn(err);
+    status("Couldn't read that file. Try an mp3, m4a, wav or ogg.");
+    return;
+  }
+  try {
+    const x = new Float32Array(ab.length);
+    for (let c = 0; c < ab.numberOfChannels; c++) { const d = ab.getChannelData(c); for (let k = 0; k < x.length; k++) x[k] += d[k] / ab.numberOfChannels; }
+    status("Listening for the build-ups and drops…");
+    const { energy } = await ask({ type: "analyse", x, sr: ab.sampleRate }, [x.buffer]);
+    if (!energy) { status("That file is too short to analyse."); return; }
+    const a = $("audio");
+    if (a.src) URL.revokeObjectURL(a.src);
+    a.src = URL.createObjectURL(file);
+    st.audio = true; st.songName = songName(file.name); st.songRaw = energy.curve;
+    st.song = S.normalise(energy.curve); st.t0 = energy.t0; st.t1 = energy.t1; st.dur = ab.duration;
+    st.vplay = false;
+    document.querySelectorAll(".ex").forEach(e => e.setAttribute("aria-pressed", "false"));
+    status("Searching every game…");
+    await runSearch();
+    status(`Matched in ${((performance.now() - t0) / 1000).toFixed(1)} s.`);
+    syncUI();
+    $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    console.warn(err);
+    status(err.gameData ? "Your song was analysed, but the game data didn't load. Refresh the page and try again."
+                        : "Something went wrong while matching. Refresh the page and try again.");
+  }
+}
+function useExample(key) {
+  const ex = st.idx.examples[key];
+  if (st.audio) { $("audio").pause(); }
+  st.audio = false; st.songName = key; st.songRaw = ex.song; st.song = S.normalise(ex.song);
+  st.t0 = 0; st.t1 = 30; st.dur = 30; st.vt = 0; st.vplay = false; st.exKey = key;
+  document.querySelectorAll(".ex").forEach(e => e.setAttribute("aria-pressed", String(e.dataset.key === key)));
+  runSearch().then(syncUI);
+}
+
+function wireUI() {
+  $("choose").onclick = () => $("file").click();
+  $("file").onchange = e => loadSong(e.target.files[0]);
+  const drop = $("drop");
+  ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => loadSong(e.dataTransfer.files[0]));
+  $("play").onclick = togglePlay;
+  $("back").onclick = () => seekTo(now() - 10);
+  $("fwd").onclick = () => seekTo(now() + 10);
+  $("seek").oninput = e => seekTo(e.target.value / 1000 * st.dur);
+  $("audio").addEventListener("ended", syncUI);
+  $("audio").addEventListener("loadedmetadata", () => { st.dur = $("audio").duration || st.dur; syncUI(); });
+  $("wp").onclick = e => { const r = e.currentTarget.getBoundingClientRect(); const f = (e.clientX - r.left - PAD.l) / (r.width - PAD.l - PAD.r); seekTo(timeOfGameFrac(Math.min(1, Math.max(0, f)))); };
+  $("ov").onclick = e => { const r = e.currentTarget.getBoundingClientRect(); const f = (e.clientX - r.left - PAD.l) / (r.width - PAD.l - PAD.r); seekTo(timeOfSongIdx(Math.min(1, Math.max(0, f)) * (N - 1))); };
+  document.querySelectorAll(".scope button").forEach(b => b.onclick = () => {
+    st.scope = b.dataset.scope;
+    document.querySelectorAll(".scope button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    if (st.song) runSearch(); else renderExamples();
+  });
+  $("copy").onclick = async () => {
+    const t = $("share-text").textContent;
+    try { await navigator.clipboard.writeText(t); } catch { const r = document.createRange(); r.selectNodeContents($("share-text")); getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand("copy"); }
+    $("copy").textContent = "Copied!"; setTimeout(() => $("copy").textContent = "Copy", 1500);
+  };
+  window.addEventListener("resize", () => { redraw(); document.querySelectorAll(".ex canvas, .runner canvas").forEach(c => c.dispatchEvent(new Event("redraw"))); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { renderExamples(); st.res && renderRunners(); redraw(); });
+}
+
+function renderExamples() {
+  const box = $("examples"); box.innerHTML = "";
+  for (const [key, ex] of Object.entries(st.idx.examples || {})) {
+    const id = st.scope === "both" ? ex.top[0] : ex["best_" + st.scope.toLowerCase()];
+    const row = st.rows.find(r => r.id === id);
+    const b = document.createElement("button");
+    b.className = "ex"; b.dataset.key = key; b.setAttribute("aria-pressed", String(st.exKey === key && !st.audio));
+    b.innerHTML = `<b>${key}</b><span class="t">→ ${row ? escapeHtml(row.title) : "no match in this league yet"}</span><canvas></canvas>`;
+    b.onclick = () => useExample(key);
+    box.appendChild(b);
+    const cv = b.querySelector("canvas"), draw = () => spark(cv, ex.song, css("--song"));
+    cv.addEventListener("redraw", draw); draw();
+  }
+}
+
+function renderMetrics(m) {
+  const el = $("metrics");
+  if (!m || !m.models) { el.textContent = "IPL win-probability model: metrics will appear once the IPL data is built."; return; }
+  const s = m.models[m.shipped], b = m.models.logreg_pooled, isLR = m.shipped === "logreg_pooled";
+  el.innerHTML = `<b>IPL win-probability model</b> (${isLR ? "logistic regression" : "LightGBM, calibrated"}), tested on ${m.test_matches} IPL matches from ${m.test_seasons.replace("IPL ", "")}: ` +
+    `log loss <b>${s.log_loss.toFixed(3)}</b>, Brier <b>${s.brier.toFixed(3)}</b>` +
+    (isLR ? "." : ` (plain logistic regression: ${b.log_loss.toFixed(3)} / ${b.brier.toFixed(3)}).`) +
+    ` Both measure how far the predicted chances sit from what actually happened, ball by ball; lower is better, and a coin-flip guess scores 0.693 / 0.25.`;
+}
+
+async function init() {
+  wireUI();
+  status("Loading the game index…");
+  const [idx, bin] = await Promise.all([fetch("index.json").then(r => r.json()), fetch("index.bin").then(r => r.arrayBuffer())]);
+  st.idx = idx; st.rows = idx.rows.map(r => Object.fromEntries(idx.fields.map((f, k) => [f, r[k]])));
+  st.Q = new Int8Array(bin);
+  const nIpl = st.rows.filter(r => r.league === "IPL").length;
+  if (!nIpl) document.querySelector('.scope [data-scope="IPL"]').disabled = true;
+  await makeWorker();
+  worker.postMessage({ type: "index", Q: bin.slice(0), rows: st.rows.map(r => ({ league: r.league, famous: r.famous })), scale: idx.scale });
+  status(`${st.rows.length.toLocaleString()} games ready (${(st.rows.length - nIpl).toLocaleString()} NFL, ${nIpl.toLocaleString()} IPL).`);
+  renderExamples();
+  fetch("metrics.json").then(r => r.ok ? r.json() : null).then(renderMetrics).catch(() => renderMetrics(null));
+  const first = Object.keys(idx.examples || {})[0];
+  if (first) useExample(first);
+}
+init().catch(err => { console.error(err); status("Couldn't load the game index."); });
+})();
+</script>
+</body>
+</html>
