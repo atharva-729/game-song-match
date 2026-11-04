@@ -119,7 +119,7 @@
 - Share text now ends with the page link when served from a real host (not localhost).
 - `check_page.py <url>` runs the full browser check against the live site and adds a seek check (jump to 60% of a demo; this needs HTTP
   Range). Live: no console errors, all five demos play with the scoreboard, seeking works, both test files match with 5 moments, the share
-  text carries the link, and v1.html loads. Matching took 2.1 s / 3.7 s (tone / 4-min mp3) at 1280 px, and 5.0 s / 8.7 s on the first
-  phone-width run, which also downloads the index on a cold cache and was on this laptop's emulated narrow viewport.
+  text carries the link, and v1.html loads. Matching took 2.1 s / 3.7 s (tone / 4-min mp3) at 1280 px, and 5.0 s / 8.7 s on the phone-width run.
+  Both runs start from a cold cache, so the gap is likely this laptop's load during the run, not the page; worth a re-time on a real phone.
 
 ## Phase 6: on hold (as asked).
