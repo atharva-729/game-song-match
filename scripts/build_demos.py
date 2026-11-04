@@ -38,6 +38,9 @@ DEMOS = [
      "performer": "Philip Milman (conductor)", "producer": "pmmusic.pro", "producer_url": "https://pmmusic.pro/",
      "licence": "CC BY 3.0", "licence_url": "https://creativecommons.org/licenses/by/3.0/"},
 ]
+# page order; the first one is what the page opens on
+ORDER = ["mountain-king", "valkyries", "danse-macabre", "coriolan", "egmont"]
+DEMOS.sort(key=lambda d: ORDER.index(d["key"]))
 
 
 def main():
