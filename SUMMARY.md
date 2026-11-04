@@ -1,7 +1,8 @@
 # Which Match Is Your Song? Status
 
-Interim handoff, 2026-11-03. **Phases 0–5 pass**, now with NFL and IPL data. Phase 6 (album) is on hold as asked,
-and Phase 7 (publish) has not started.
+**Live: <https://atharva-729.github.io/game-song-match/>** (repo: <https://github.com/atharva-729/game-song-match>)
+
+Handoff, 2026-11-04. **Phases 0–5 and 7 pass**, with NFL and IPL data. Phase 6 (album) is on hold as asked.
 
 ## Where things stand
 
@@ -14,7 +15,7 @@ and Phase 7 (publish) has not started.
 | 4 Browser analysis | PASS | Python and JS top 5 identical (curves agree to 2e-15) |
 | 5 Page | PASS | 380/1280 px, light/dark, no console errors; 4-min mp3 matched in 2.3–2.5 s (plugged in) |
 | 6 Album | On hold | As asked |
-| 7 Publish | Not started | Needs `gh` installed and logged in, plus your go-ahead for a public repo |
+| 7 Publish | PASS | Live on GitHub Pages; the full browser check passes against the live URL (demos, seeking, your own songs, v1) |
 
 Try it locally: `python scripts/serve.py`, then open <http://localhost:8000> (Ctrl+F5 after a rebuild). Don't use `python -m http.server`:
 it can't serve byte ranges, so seeking in the demo audio breaks. The previous page design is at <http://localhost:8000/v1.html>.
@@ -43,10 +44,11 @@ unfolds as the music plays. The demo audio overrides the README's no-audio rule,
   carry a "★ classic" tag on the page.
 
 ## Needs you
-- **Phase 7:** install `gh`, log in, and say go before I create the public repo.
+- **To update the live site:** commit, then `bash scripts/publish.sh` (pushes `main`, then `site/` as the `gh-pages` branch).
 - **Phase 6:** say when.
 
 ## Fun example matches (synthetic shapes)
-The examples and their matches are in `logs/match_selftest.md`, and the page shows them under "No song handy? Try a shape".
+The synthetic-shape matches are in `logs/match_selftest.md` (the v1 page shows them). The v2 page uses five real demo recordings instead;
+for example Beethoven's *Egmont* ("the comeback") lands on Chiefs 51 @ Rams 54, the 2018 Monday-night shootout.
 
 Full logs: `logs/progress.md`. Screenshots: `logs/screens/`. One-command rebuild: `bash scripts/rebuild.sh [--nfl] [--ipl]`.

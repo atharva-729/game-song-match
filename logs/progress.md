@@ -110,4 +110,16 @@
 - **Checks:** self-test 20/20, parity top 5 identical, and page checks PASS. All five demos play and the scoreboard updates; seeking to
   62% of Egmont shows Chiefs 30-33 Rams in Q3 (2:24 left). `v1.html` loads with no errors. Timing (plugged in, idle): the 4-min mp3 matched in 2.3-2.5 s.
 
-## Phase 6: on hold (as asked). Phase 7: not started.
+## Phase 7: published (2026-11-04) — PASS
+- Repo <https://github.com/atharva-729/game-song-match> (the name Atharva chose; the README said `which-match-is-your-song`). No `gh`, so
+  it was pushed with plain git: `main` holds everything, and `site/` goes out as the `gh-pages` branch, which made GitHub turn Pages on by
+  itself. Live at <https://atharva-729.github.io/game-song-match/> about 60 s after the push. `scripts/publish.sh` repeats this.
+- Not committed: `data/raw`, `data/curves`, test tones and any song audio (`.gitignore`). Only the five credited demo mp3s are in. A scan of the
+  staged files found no emails, tokens or local paths. `.gitattributes` keeps `index.bin` and the mp3s binary; `site/.nojekyll` skips Jekyll.
+- Share text now ends with the page link when served from a real host (not localhost).
+- `check_page.py <url>` runs the full browser check against the live site and adds a seek check (jump to 60% of a demo; this needs HTTP
+  Range). Live: no console errors, all five demos play with the scoreboard, seeking works, both test files match with 5 moments, the share
+  text carries the link, and v1.html loads. Matching took 2.1 s / 3.7 s (tone / 4-min mp3) at 1280 px, and 5.0 s / 8.7 s on the first
+  phone-width run, which also downloads the index on a cold cache and was on this laptop's emulated narrow viewport.
+
+## Phase 6: on hold (as asked).
