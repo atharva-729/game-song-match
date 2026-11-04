@@ -1,0 +1,6 @@
+* text=auto
+*.bin binary
+*.mp3 binary
+*.wav binary
+*.png binary
+*.pkl binary

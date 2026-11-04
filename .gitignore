@@ -1,0 +1,15 @@
+data/raw/
+data/curves/
+data/*.wav
+data/*.mp3
+logs/screens/song_*.png
+__pycache__/
+*.pyc
+# never commit song audio
+*.mp3
+*.m4a
+*.flac
+*.ogg
+
+# demo recordings ARE published (free licences, credited on the page)
+!site/demo/*.mp3

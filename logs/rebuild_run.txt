@@ -1,0 +1,95 @@
+plays 1236524 games 7273
+leverage model fitted; p99 = 0.0948
+games written 7273 dropped 0 famous 26
+{
+ "leverage": {
+  "early_close_z": 0.24775520289204014,
+  "late_close_z": 2.1645269660074304,
+  "gap": 1.9167717631153902
+ },
+ "readme_v1": {
+  "early_close_z": 0.5112124197655824,
+  "late_close_z": 2.0291896285900073,
+  "gap": 1.517977208824425
+ }
+}
+2023_01_BUF_NYJ mean first half 0.375 mean last 15% 0.867 max 1.22
+2023_11_NYJ_BUF mean first half 0.276 mean last 15% 0.012 max 0.6
+{"matches": 7273, "NFL": 7273, "IPL": 0, "flat_unmatchable": 0, "index_bytes": 2138758}
+# Matcher self-test
+
+Index: 7273 matches (7273 NFL, 0 IPL).
+
+## Synthetic songs
+
+Mean z-tension of the top match per third of the game, and where its peak sits (0 = start, 1 = end).
+
+**Slow build** (3.5 s)
+1. Broncos 31 @ Patriots 34 (OT) · 2013 Week 12 ★: dist 0.086, thirds [-0.58, -0.52, 1.12], peak at 0.98
+2. 49ers 22 @ Chiefs 25 (OT) · 2023 Super Bowl ★: dist 0.093, thirds [-0.68, -0.5, 1.2], peak at 0.97
+3. Bengals 23 @ Browns 20 (OT) · 2009 Week 4: dist 0.044, thirds [-0.76, -0.5, 1.27], peak at 0.92
+   best NFL: Broncos 31 @ Patriots 34 (OT) · 2013 Week 12 (dist 0.086)
+
+**Explosive start** (3.4 s)
+1. Falcons 24 @ Raiders 0 · 2008 Week 9: dist 0.022, thirds [1.21, -0.37, -0.86], peak at 0.08
+2. Bears 12 @ Rams 34 · 1999 Week 16: dist 0.024, thirds [1.19, -0.46, -0.76], peak at 0.0
+3. Eagles 7 @ Panthers 33 · 1999 Week 9: dist 0.025, thirds [1.06, -0.3, -0.81], peak at 0.0
+   best NFL: Falcons 24 @ Raiders 0 · 2008 Week 9 (dist 0.022)
+
+**Rollercoaster** (4.4 s)
+1. Giants 21 @ Steelers 14 · 2008 Week 8: dist 0.152, thirds [-0.51, -0.03, 0.54], peak at 0.8
+2. Steelers 19 @ Falcons 16 · 2022 Week 13: dist 0.201, thirds [0.13, -0.53, 0.41], peak at 0.88
+3. Texans 16 @ Ravens 23 · 2017 Week 12: dist 0.210, thirds [-0.31, -0.17, 0.49], peak at 0.9
+   best NFL: Giants 21 @ Steelers 14 · 2008 Week 8 (dist 0.152)
+
+## Test 4: a game's own curve returns that game as #1
+
+**20/20 passed.**
+
+## Match % curve
+
+Best-match distance over 120 random smooth songs: p10/p50/p90 = [0.0251, 0.0977, 0.2541].
+match % = round(100 * exp(-dist / 0.43797)), so the median song shows 80%.
+
+C:\Users\91821\Desktop\;)\innovation team\ipl-song-match\data\test_tone.wav 90s
+# Python vs JS parity (test tone)
+
+- Energy frames: Python 3870, JS 3870; max |diff| 1.7763568394002505e-15
+- Trim window: Python 0.116-89.954 s, JS 0.116-89.954 s
+- JS timing (Node): energy 437 ms, search 489 ms over 7273 matches
+- **Top 5 identical: True**
+
+| # | Python | dist | JS | dist |
+|---|---|---|---|---|
+| 1 | nfl_2019_13_WAS_CAR | 0.1223425246 | nfl_2019_13_WAS_CAR | 0.1223425246 |
+| 2 | nfl_2008_13_MIA_STL | 0.2003720279 | nfl_2008_13_MIA_STL | 0.2003720279 |
+| 3 | nfl_2016_13_DAL_MIN | 0.2362309168 | nfl_2016_13_DAL_MIN | 0.2362309168 |
+| 4 | nfl_2014_17_CHI_MIN | 0.2529073194 | nfl_2014_17_CHI_MIN | 0.2529073194 |
+| 5 | nfl_2015_19_GB_ARI | 0.3077390653 | nfl_2015_19_GB_ARI | 0.3077390653 |
+127.0.0.1 - - [03/Nov/2026 18:10:53] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:10:53] "GET /core.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:10:53] "GET /index.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:10:53] "GET /index.bin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:10:53] "GET /metrics.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:10:54] "GET /games/nfl_2013_12_DEN_NE.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:10:56] "GET /games/nfl_2019_13_WAS_CAR.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:06] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:06] "GET /core.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:06] "GET /index.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:06] "GET /index.bin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:07] "GET /metrics.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:07] "GET /games/nfl_2013_12_DEN_NE.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:08] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:08] "GET /core.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:08] "GET /index.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:08] "GET /index.bin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:08] "GET /metrics.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:08] "GET /games/nfl_2013_12_DEN_NE.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:09] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:09] "GET /core.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:09] "GET /index.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:09] "GET /index.bin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:09] "GET /metrics.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:10] "GET /games/nfl_2013_12_DEN_NE.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 18:11:11] "GET /games/nfl_2019_13_WAS_CAR.json HTTP/1.1" 200 -
+page checks: PASS

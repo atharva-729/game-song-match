@@ -1,0 +1,91 @@
+plays 1236524 games 7273
+leverage model fitted; p99 = 0.0948
+games written 7273 dropped 0 famous 26
+rows: train 1191052 (IPL 201339), val 17912, test 67880
+fitted pooled
+fitted ipl_only
+{
+ "test_seasons": "IPL 2023+",
+ "test_balls": 67880,
+ "test_matches": 281,
+ "train_balls": 1191052,
+ "shipped": "logreg_pooled",
+ "models": {
+  "lgbm_pooled": {
+   "log_loss": 0.6320995365640532,
+   "brier": 0.19631952223476634,
+   "log_loss_inn1": 0.8053810765897508,
+   "log_loss_inn2": 0.4456651544837428
+  },
+  "lgbm_ipl_only": {
+   "log_loss": 0.6071270963699661,
+   "brier": 0.1969783645957266,
+   "log_loss_inn1": 0.7454567897158261,
+   "log_loss_inn2": 0.45829756208449274
+  },
+  "logreg_pooled": {
+   "log_loss": 0.5449750417813755,
+   "brier": 0.1863740517851966,
+   "log_loss_inn1": 0.6456982591856482,
+   "log_loss_inn2": 0.4366064827581723
+  }
+ },
+ "curves": {
+  "ipl_matches": 1216,
+  "mean_break_jump": 0.07522721133395704,
+  "smoothed_break": false,
+  "lev_p99": 0.3462068712317812,
+  "famous_found": 15,
+  "famous_missing": [],
+  "last_ball_wrong_side": [],
+  "sanity_plot": [
+   "MI vs RPS \u00b7 IPL 2017 Final",
+   "MI vs CSK \u00b7 IPL 2019 Final",
+   "GT vs CSK \u00b7 IPL 2023 Final"
+  ]
+ }
+}
+{"matches": 8489, "NFL": 7273, "IPL": 1216, "flat_unmatchable": 0, "index_bytes": 2478297}
+# Matcher self-test
+
+Index: 8489 matches (7273 NFL, 1216 IPL).
+
+## Synthetic songs
+
+Mean z-tension of the top match per third of the game, and where its peak sits (0 = start, 1 = end).
+
+**Slow build** (3.3 s)
+1. Bengals 23 @ Browns 20 (OT) · 2009 Week 4: dist 0.044, thirds [-0.76, -0.5, 1.27], peak at 0.92
+2. Steelers 10 @ Ravens 13 (OT) · 2003 Week 17: dist 0.050, thirds [-0.82, -0.36, 1.2], peak at 0.99
+3. Colts 22 @ Ravens 19 (OT) · 2023 Week 3: dist 0.052, thirds [-0.89, -0.27, 1.18], peak at 0.94
+   best NFL: Bengals 23 @ Browns 20 (OT) · 2009 Week 4 (dist 0.044)
+   best IPL: DC vs RR · IPL 2025 Match 32 (dist 0.060)
+
+**Explosive start** (2.4 s)
+1. LSG vs PBKS · IPL 2023 Match 38: dist 0.018, thirds [1.12, -0.5, -0.63], peak at 0.03
+2. KKR vs RCB · IPL 2020 Match 39: dist 0.021, thirds [1.08, -0.4, -0.69], peak at 0.05
+3. SRH vs RCB · IPL 2019 Match 11: dist 0.022, thirds [1.19, -0.32, -0.87], peak at 0.01
+   best NFL: Falcons 24 @ Raiders 0 · 2008 Week 9 (dist 0.022)
+   best IPL: LSG vs PBKS · IPL 2023 Match 38 (dist 0.018)
+
+**Rollercoaster** (2.4 s)
+1. Giants 21 @ Steelers 14 · 2008 Week 8: dist 0.152, thirds [-0.51, -0.03, 0.54], peak at 0.8
+2. Steelers 19 @ Falcons 16 · 2022 Week 13: dist 0.201, thirds [0.13, -0.53, 0.41], peak at 0.88
+3. Texans 16 @ Ravens 23 · 2017 Week 12: dist 0.210, thirds [-0.31, -0.17, 0.49], peak at 0.9
+   best NFL: Giants 21 @ Steelers 14 · 2008 Week 8 (dist 0.152)
+   best IPL: GT vs KKR · IPL 2023 Match 13 (dist 0.631)
+
+## Test 4: a game's own curve returns that game as #1
+
+**20/20 passed.**
+
+## Match % curve
+
+Best-match distance over 120 random smooth songs: p10/p50/p90 = [0.0237, 0.0842, 0.2566].
+match % = round(100 * exp(-dist / 0.37737)), so the median song shows 80%.
+
+Rollercoaster                  danse-macabre  -> Chiefs 34 @ Raiders 20 · 2015 Week 13
+Boring, then brilliance        mountain-king  -> GT vs LSG · IPL 2022 Match 57
+Explosive start, fizzles out   coriolan       -> Raiders 9 @ 49ers 17 · 2010 Week 6
+The comeback                   egmont         -> Chiefs 51 @ Rams 54 · 2018 Week 11
+Intense all the way            valkyries      -> Patriots 28 @ Buccaneers 23 · 2025 Week 10

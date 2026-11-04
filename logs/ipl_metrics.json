@@ -1,0 +1,41 @@
+{
+ "test_seasons": "IPL 2023+",
+ "test_balls": 67880,
+ "test_matches": 281,
+ "train_balls": 1191052,
+ "shipped": "logreg_pooled",
+ "models": {
+  "lgbm_pooled": {
+   "log_loss": 0.6320995365640532,
+   "brier": 0.19631952223476634,
+   "log_loss_inn1": 0.8053810765897508,
+   "log_loss_inn2": 0.4456651544837428
+  },
+  "lgbm_ipl_only": {
+   "log_loss": 0.6071270963699661,
+   "brier": 0.1969783645957266,
+   "log_loss_inn1": 0.7454567897158261,
+   "log_loss_inn2": 0.45829756208449274
+  },
+  "logreg_pooled": {
+   "log_loss": 0.5449750417813755,
+   "brier": 0.1863740517851966,
+   "log_loss_inn1": 0.6456982591856482,
+   "log_loss_inn2": 0.4366064827581723
+  }
+ },
+ "curves": {
+  "ipl_matches": 1216,
+  "mean_break_jump": 0.07522721133395704,
+  "smoothed_break": false,
+  "lev_p99": 0.3462068712317812,
+  "famous_found": 15,
+  "famous_missing": [],
+  "last_ball_wrong_side": [],
+  "sanity_plot": [
+   "MI vs RPS \u00b7 IPL 2017 Final",
+   "MI vs CSK \u00b7 IPL 2019 Final",
+   "GT vs CSK \u00b7 IPL 2023 Final"
+  ]
+ }
+}

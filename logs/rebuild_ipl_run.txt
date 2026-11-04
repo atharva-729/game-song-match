@@ -1,0 +1,145 @@
+{
+ "matches": 10239,
+ "balls": 2389687,
+ "ipl_matches": 1216,
+ "ipl_dls_kept": 23,
+ "skipped": {
+  "not men's T20": 12176,
+  "innings 1 incomplete": 235,
+  "no winner (no result)": 213,
+  "not 6-ball overs": 201,
+  "not two main innings": 71,
+  "no winner (tie)": 39,
+  "DLS without revised target": 9,
+  "innings 2 incomplete": 6,
+  "method Awarded": 3,
+  "method Lost fewer wickets": 1
+ }
+}
+rows: train 1191052 (IPL 201339), val 17912, test 67880
+fitted pooled
+fitted ipl_only
+{
+ "test_seasons": "IPL 2023+",
+ "test_balls": 67880,
+ "test_matches": 281,
+ "train_balls": 1191052,
+ "shipped": "logreg_pooled",
+ "models": {
+  "lgbm_pooled": {
+   "log_loss": 0.6282597078167943,
+   "brier": 0.19538993938162447,
+   "log_loss_inn1": 0.7970620218065974,
+   "log_loss_inn2": 0.44664454501440704
+  },
+  "lgbm_ipl_only": {
+   "log_loss": 0.6066252744895101,
+   "brier": 0.19534306129637596,
+   "log_loss_inn1": 0.748494472226005,
+   "log_loss_inn2": 0.4539875716372019
+  },
+  "logreg_pooled": {
+   "log_loss": 0.5477414998079377,
+   "brier": 0.18731714363221502,
+   "log_loss_inn1": 0.64663341338697,
+   "log_loss_inn2": 0.441343248741424
+  }
+ },
+ "curves": {
+  "ipl_matches": 1216,
+  "mean_break_jump": 0.08386784888736232,
+  "smoothed_break": false,
+  "lev_p99": 0.35688882979768016,
+  "famous_found": 15,
+  "famous_missing": [],
+  "last_ball_wrong_side": [],
+  "sanity_plot": [
+   "MI vs RPS \u00b7 IPL 2017 Final",
+   "MI vs CSK \u00b7 IPL 2019 Final",
+   "GT vs CSK \u00b7 IPL 2023 Final"
+  ]
+ }
+}
+{"matches": 8489, "NFL": 7273, "IPL": 1216, "flat_unmatchable": 0, "index_bytes": 2478297}
+# Matcher self-test
+
+Index: 8489 matches (7273 NFL, 1216 IPL).
+
+## Synthetic songs
+
+Mean z-tension of the top match per third of the game, and where its peak sits (0 = start, 1 = end).
+
+**Slow build** (3.7 s)
+1. Broncos 31 @ Patriots 34 (OT) · 2013 Week 12 ★: dist 0.086, thirds [-0.58, -0.52, 1.12], peak at 0.98
+2. 49ers 22 @ Chiefs 25 (OT) · 2023 Super Bowl ★: dist 0.093, thirds [-0.68, -0.5, 1.2], peak at 0.97
+3. Bengals 23 @ Browns 20 (OT) · 2009 Week 4: dist 0.044, thirds [-0.76, -0.5, 1.27], peak at 0.92
+   best NFL: Broncos 31 @ Patriots 34 (OT) · 2013 Week 12 (dist 0.086)
+   best IPL: DC vs RR · IPL 2025 Match 32 (dist 0.065)
+
+**Explosive start** (2.6 s)
+1. MI vs DD · IPL 2012 Match 19: dist 0.020, thirds [1.18, -0.37, -0.82], peak at 0.01
+2. Falcons 24 @ Raiders 0 · 2008 Week 9: dist 0.022, thirds [1.21, -0.37, -0.86], peak at 0.08
+3. KXIP vs RCB · IPL 2011 Match 63: dist 0.022, thirds [1.27, -0.43, -0.85], peak at 0.01
+   best NFL: Falcons 24 @ Raiders 0 · 2008 Week 9 (dist 0.022)
+   best IPL: MI vs DD · IPL 2012 Match 19 (dist 0.020)
+
+**Rollercoaster** (2.7 s)
+1. Giants 21 @ Steelers 14 · 2008 Week 8: dist 0.152, thirds [-0.51, -0.03, 0.54], peak at 0.8
+2. Steelers 19 @ Falcons 16 · 2022 Week 13: dist 0.201, thirds [0.13, -0.53, 0.41], peak at 0.88
+3. Texans 16 @ Ravens 23 · 2017 Week 12: dist 0.210, thirds [-0.31, -0.17, 0.49], peak at 0.9
+   best NFL: Giants 21 @ Steelers 14 · 2008 Week 8 (dist 0.152)
+   best IPL: PBKS vs GT · IPL 2025 Match 5 (dist 0.447)
+
+## Test 4: a game's own curve returns that game as #1
+
+**18/20 passed.**
+- FAIL: RCB vs CSK · IPL 2011 Qualifier 1 -> MI vs CSK · IPL 2019 Final
+- FAIL: Vikings 26 @ Saints 20 (OT) · 2019 Wild Card -> 49ers 22 @ Chiefs 25 (OT) · 2023 Super Bowl
+
+## Match % curve
+
+Best-match distance over 120 random smooth songs: p10/p50/p90 = [0.0251, 0.0877, 0.2448].
+match % = round(100 * exp(-dist / 0.39299)), so the median song shows 80%.
+
+C:\Users\91821\Desktop\;)\innovation team\ipl-song-match\data\test_tone.wav 90s
+# Python vs JS parity (test tone)
+
+- Energy frames: Python 3870, JS 3870; max |diff| 1.7763568394002505e-15
+- Trim window: Python 0.116-89.954 s, JS 0.116-89.954 s
+- JS timing (Node): energy 1768 ms, search 2458 ms over 8489 matches
+- **Top 5 identical: True**
+
+| # | Python | dist | JS | dist |
+|---|---|---|---|---|
+| 1 | nfl_2019_13_WAS_CAR | 0.1223425246 | nfl_2019_13_WAS_CAR | 0.1223425246 |
+| 2 | nfl_2008_13_MIA_STL | 0.2003720279 | nfl_2008_13_MIA_STL | 0.2003720279 |
+| 3 | nfl_2016_13_DAL_MIN | 0.2362309168 | nfl_2016_13_DAL_MIN | 0.2362309168 |
+| 4 | nfl_2014_17_CHI_MIN | 0.2529073194 | nfl_2014_17_CHI_MIN | 0.2529073194 |
+| 5 | nfl_2015_19_GB_ARI | 0.3077390653 | nfl_2015_19_GB_ARI | 0.3077390653 |
+127.0.0.1 - - [03/Nov/2026 19:43:42] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:43:42] "GET /core.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:43:42] "GET /index.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:43:42] "GET /index.bin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:43:43] "GET /metrics.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:43:46] "GET /games/nfl_2013_12_DEN_NE.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:43:52] "GET /games/nfl_2019_13_WAS_CAR.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:13] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:13] "GET /core.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:13] "GET /index.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:13] "GET /index.bin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:13] "GET /metrics.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:17] "GET /games/nfl_2013_12_DEN_NE.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:18] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:18] "GET /core.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:18] "GET /index.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:18] "GET /index.bin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:19] "GET /metrics.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:22] "GET /games/nfl_2013_12_DEN_NE.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:23] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:23] "GET /core.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:23] "GET /index.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:23] "GET /index.bin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:24] "GET /metrics.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:26] "GET /games/nfl_2013_12_DEN_NE.json HTTP/1.1" 200 -
+127.0.0.1 - - [03/Nov/2026 19:44:31] "GET /games/nfl_2019_13_WAS_CAR.json HTTP/1.1" 200 -
+page checks: PASS
