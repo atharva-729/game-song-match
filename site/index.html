@@ -274,7 +274,7 @@ footer { color: var(--ink2); font-size: 13px; padding: 30px 0 40px; border-top: 
   <div class="metrics" id="metrics">IPL model metrics load with the index.</div>
 
   <div class="row" style="margin-top:36px" id="music"><h2>The music</h2>
-    <div class="small">All five demo recordings come from <a href="https://www.classicals.de">classicals.de</a>. Thank you to the performers and producers below for making them free to use. Each was re-encoded to 128 kbps MP3 for the web, with no other changes.</div>
+    <div class="small">All five demo recordings come from <a href="https://www.classicals.de">classicals.de</a>. Thank you to the performers and producers below for making them free to use. Each was re-encoded to 128 kbps MP3 for the web. To keep the demo short, the three longer pieces play only their final two minutes, uncut from there to the end.</div>
   </div>
   <div class="credits" id="credits"></div>
 </main>
@@ -738,7 +738,7 @@ function renderDemos() {
 function renderCredits() {
   $("credits").innerHTML = st.demos.map(d => `<div><b>${escapeHtml(d.composer)}: ${escapeHtml(d.piece)}</b>` +
     `Performed by ${escapeHtml(d.performer)}` + (d.producer ? `, <a href="${d.producer_url}">${escapeHtml(d.producer)}</a>` : "") + `.<br>` +
-    `Via <a href="${d.source}">classicals.de</a>. Re-encoded to 128 kbps MP3.<br>` +
+    `Via <a href="${d.source}">classicals.de</a>. Re-encoded to 128 kbps MP3` + (d.excerpt ? `; excerpt, ${escapeHtml(d.excerpt)}` : "") + `.<br>` +
     `<a class="lic" href="${d.licence_url}">${escapeHtml(d.licence)}</a></div>`).join("");
 }
 

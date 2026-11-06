@@ -49,6 +49,8 @@ unfolds as the music plays. The demo audio overrides the README's no-audio rule,
 
 ## Fun example matches (synthetic shapes)
 The synthetic-shape matches are in `logs/match_selftest.md` (the v1 page shows them). The v2 page uses five real demo recordings instead;
-for example Beethoven's *Egmont* ("the comeback") lands on Chiefs 51 @ Rams 54, the 2018 Monday-night shootout.
+for example the last two minutes of Beethoven's *Egmont* ("the comeback") land on Titans 17 @ Jets 24, 2009 Week 3.
+The three long pieces (Egmont, Coriolan, Danse Macabre) are cut to their final 2 minutes by `scripts/cut_demos.py`;
+the full recordings sit in `data/raw/demo_full/`.
 
 Full logs: `logs/progress.md`. Screenshots: `logs/screens/`. One-command rebuild: `bash scripts/rebuild.sh [--nfl] [--ipl]`.
